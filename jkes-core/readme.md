@@ -3,13 +3,13 @@
 ```
 curl -X PUT -H "Content-Type: application/vnd.schemaregistry.v1+json" \
     --data '{"compatibility": "NONE"}' \
-    http://k1:8081/config
+    http://k1-test.com:8081/config
   {"compatibility":"NONE"}
 ```
 ```
 curl -X PUT -H "Content-Type: application/vnd.schemaregistry.v1+json" \
     --data '{"compatibility": "BACKWARD"}' \
-    http://k1:8081/config
+    http://k1-test.com:8081/config
 ```
 
 ## Mapping Admin

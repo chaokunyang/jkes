@@ -19,7 +19,7 @@ public class KafkaConnectClientTest {
         JkesProperties jkesProperties = new DefaultJkesPropertiesImpl() {
             @Override
             public String getKafkaConnectServers() {
-                return "http://k1:8083,http://k2:8083,http://k3:8083";
+                return "http://k1-test.com:8083,http://k2-test.com:8083,http://k3-test.com:8083";
             }
         };
         Config.setJkesProperties(jkesProperties);
@@ -35,7 +35,7 @@ public class KafkaConnectClientTest {
         JkesProperties jkesProperties = new DefaultJkesPropertiesImpl() {
             @Override
             public String getKafkaConnectServers() {
-                return "http://k1:8083,http://k2:8083,http://k3:8083";
+                return "http://k1-test.com:8083,http://k2-test.com:8083,http://k3-test.com:8083";
             }
         };
         Config.setJkesProperties(jkesProperties);
@@ -49,7 +49,7 @@ public class KafkaConnectClientTest {
         JkesProperties jkesProperties = new DefaultJkesPropertiesImpl() {
             @Override
             public String getKafkaConnectServers() {
-                return "http://k1:8083,http://k2:8083,http://k3:8083";
+                return "http://k1-test.com:8083,http://k2-test.com:8083,http://k3-test.com:8083";
             }
         };
         Config.setJkesProperties(jkesProperties);

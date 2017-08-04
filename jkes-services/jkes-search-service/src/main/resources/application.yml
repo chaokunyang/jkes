@@ -3,16 +3,16 @@ spring:
   profiles: default
 server:
   port: 9000
-jkes.es.servers: http://es1-dev.com:9200,http://es2-dev:9200,http://es3-dev:9200
+jkes.es.servers: http://es1-dev.com:9200,http://es2-dev.com:9200,http://es3-dev.com:9200
 ---
 spring:
   profiles: test
 server:
   port: 9000
-jkes.es.servers: http://es1-test.com:9200,http://es2-test:9200,http://es3-test:9200
+jkes.es.servers: http://es1-test.com:9200,http://es2-test.com:9200,http://es3-test.com:9200
 ---
 spring:
   profiles: prod
 server:
   port: 9000
-jkes.es.servers: http://es1-prod.com:9200,http://es2-prod:9200,http://es3-prod:9200
+jkes.es.servers: http://es1-prod.com:9200,http://es2-prod:9200,http://es3-prod.com:9200

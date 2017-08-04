@@ -22,7 +22,7 @@ public class IndicesAdminClientTest {
         JkesProperties jkesProperties = new DefaultJkesPropertiesImpl() {
             @Override
             public String getEsBootstrapServers() {
-                return "http://e1:9200,http://e2:9200,http://e3:9200";
+                return "http://es1-test.com:9200,http://es2-test.com:9200,http://es3-test.com:9200";
             }
         };
         Config.setJkesProperties(jkesProperties);
