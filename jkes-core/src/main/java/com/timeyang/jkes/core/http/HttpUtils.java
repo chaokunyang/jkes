@@ -25,6 +25,16 @@ public class HttpUtils {
         return ips;
     }
 
+    public static String getIpsFormDomainName(String domainName) throws UnknownHostException {
+        String url = "http://" + domainName;
+        try {
+            InetAddress address = InetAddress.getByName(new URL(url).getHost());
+            return address.getHostAddress();
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e); // impossible, because we add "http://" prefix
+        }
+    }
+
     public static String[] getIpsFormDomainNames(String... domainNames) throws UnknownHostException {
         if(domainNames == null || domainNames.length == 0)
             return null;

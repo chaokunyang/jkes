@@ -58,16 +58,18 @@ public class JkesConf implements JkesProperties {
 
     @Override
     public String getKafkaBootstrapServers() {
-        try {
-            String[] ips = HttpUtils.getIpsFormDomainNames(kafkaBootstrapServers.split(","));
-            StringBuilder urlStringBuilder = new StringBuilder();
-            Arrays.stream(ips).forEach(
-                    ip -> urlStringBuilder.append(ip).append(":9200,")
-            );
-            return urlStringBuilder.deleteCharAt(urlStringBuilder.length() - 1).toString();
-        } catch (UnknownHostException e) {
-            throw new RuntimeException(e);
-        }
+        StringBuilder stringBuilder = new StringBuilder();
+        String[] urls = kafkaBootstrapServers.split(",");
+        Arrays.stream(urls).forEach(url -> {
+            String[] split = url.split(":");
+            try {
+                stringBuilder.append(HttpUtils.getIpsFormDomainName(split[0])).append(":").append(split[1]).append(",");
+            } catch (UnknownHostException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        return stringBuilder.deleteCharAt(stringBuilder.length() - 1).toString();
     }
 
     @Override
