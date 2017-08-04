@@ -61,8 +61,10 @@ public class JkesConf implements JkesProperties {
         try {
             String[] ips = HttpUtils.getIpsFormDomainNames(kafkaBootstrapServers.split(","));
             StringBuilder urlStringBuilder = new StringBuilder();
-            Arrays.stream(ips).forEach(ip -> urlStringBuilder.append(ip).append(":9200,"));
-            return urlStringBuilder.deleteCharAt(urlStringBuilder.length() - 5).toString();
+            Arrays.stream(ips).forEach(
+                    ip -> urlStringBuilder.append(ip).append(":9200,")
+            );
+            return urlStringBuilder.deleteCharAt(1).toString();
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
         }
