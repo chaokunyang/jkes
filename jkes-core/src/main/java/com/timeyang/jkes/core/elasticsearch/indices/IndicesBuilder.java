@@ -1,6 +1,6 @@
 package com.timeyang.jkes.core.elasticsearch.indices;
 
-import com.timeyang.jkes.core.elasticsearch.annotation.Document;
+import com.timeyang.jkes.core.annotation.Document;
 import com.timeyang.jkes.core.elasticsearch.mapping.MappingBuilder;
 import com.timeyang.jkes.core.util.Asserts;
 import com.timeyang.jkes.core.util.DocumentUtils;

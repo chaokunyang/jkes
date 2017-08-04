@@ -1,5 +1,8 @@
 package com.timeyang.jkes.spring.jpa.audit;
 
+import com.timeyang.jkes.core.annotation.DocumentVersion;
+import com.timeyang.jkes.core.annotation.Field;
+
 import javax.persistence.Column;
 import javax.persistence.EntityListeners;
 import javax.persistence.MappedSuperclass;
@@ -27,6 +30,7 @@ public abstract class AuditedEntity {
     @Column(name = "revision")
     private long version;
 
+    @Field
     public Date getDateCreated() {
         return dateCreated;
     }
@@ -35,6 +39,7 @@ public abstract class AuditedEntity {
         this.dateCreated = dateCreated;
     }
 
+    @Field
     public Date getDateModified() {
         return dateModified;
     }
@@ -43,6 +48,8 @@ public abstract class AuditedEntity {
         this.dateModified = dateModified;
     }
 
+    @Field
+    @DocumentVersion
     public long getVersion() {
         return version;
     }

@@ -1,11 +1,11 @@
 package com.timeyang.jkes.integration_test.domain;
 
-import com.timeyang.jkes.core.elasticsearch.annotation.Document;
-import com.timeyang.jkes.core.elasticsearch.annotation.DocumentId;
-import com.timeyang.jkes.core.elasticsearch.annotation.Field;
-import com.timeyang.jkes.core.elasticsearch.annotation.FieldType;
-import com.timeyang.jkes.core.elasticsearch.annotation.InnerField;
-import com.timeyang.jkes.core.elasticsearch.annotation.MultiFields;
+import com.timeyang.jkes.core.annotation.Document;
+import com.timeyang.jkes.core.annotation.DocumentId;
+import com.timeyang.jkes.core.annotation.Field;
+import com.timeyang.jkes.core.annotation.FieldType;
+import com.timeyang.jkes.core.annotation.InnerField;
+import com.timeyang.jkes.core.annotation.MultiFields;
 import com.timeyang.jkes.spring.jpa.audit.AuditedEntity;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;

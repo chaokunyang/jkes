@@ -1,6 +1,6 @@
 package com.timeyang.jkes.core.kafka.connect;
 
-import com.timeyang.jkes.core.elasticsearch.annotation.Document;
+import com.timeyang.jkes.core.annotation.Document;
 import com.timeyang.jkes.core.http.HttpClient;
 import com.timeyang.jkes.core.kafka.util.EsKafkaUtils;
 import com.timeyang.jkes.core.support.JkesProperties;

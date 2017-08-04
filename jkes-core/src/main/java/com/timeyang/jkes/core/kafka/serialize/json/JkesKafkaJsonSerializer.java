@@ -3,7 +3,7 @@ package com.timeyang.jkes.core.kafka.serialize.json;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.timeyang.jkes.core.elasticsearch.annotation.Document;
+import com.timeyang.jkes.core.annotation.Document;
 import com.timeyang.jkes.core.elasticsearch.serialize.JkesJsonSerializer;
 import com.timeyang.jkes.core.util.ClassUtils;
 import org.apache.kafka.common.errors.SerializationException;

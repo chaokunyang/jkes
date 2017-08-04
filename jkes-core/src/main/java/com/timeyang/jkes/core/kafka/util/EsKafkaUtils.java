@@ -1,10 +1,10 @@
 package com.timeyang.jkes.core.kafka.util;
 
-import com.timeyang.jkes.core.elasticsearch.annotation.Document;
+import com.timeyang.jkes.core.annotation.Document;
 import com.timeyang.jkes.core.util.Asserts;
 import com.timeyang.jkes.core.support.Config;
 import com.timeyang.jkes.core.util.DocumentUtils;
-import com.timeyang.jkes.core.elasticsearch.annotation.DocumentId;
+import com.timeyang.jkes.core.annotation.DocumentId;
 import com.timeyang.jkes.core.elasticsearch.exception.IlllegalSearchStateException;
 import com.timeyang.jkes.core.util.StringUtils;
 

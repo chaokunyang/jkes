@@ -1,6 +1,6 @@
 package com.timeyang.jkes.core.elasticsearch;
 
-import com.timeyang.jkes.core.elasticsearch.annotation.Document;
+import com.timeyang.jkes.core.annotation.Document;
 import com.timeyang.jkes.core.elasticsearch.indices.InvalidIndexNameException;
 import com.timeyang.jkes.core.util.StringUtils;
 import com.timeyang.jkes.core.util.DocumentUtils;

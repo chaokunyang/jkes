@@ -3,7 +3,7 @@ package com.timeyang.jkes.core.elasticsearch.serialize;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.timeyang.jkes.core.elasticsearch.annotation.Document;
+import com.timeyang.jkes.core.annotation.Document;
 import com.timeyang.jkes.core.util.ClassUtils;
 import com.timeyang.jkes.entity.Person;
 import com.timeyang.jkes.entity.PersonGroup;

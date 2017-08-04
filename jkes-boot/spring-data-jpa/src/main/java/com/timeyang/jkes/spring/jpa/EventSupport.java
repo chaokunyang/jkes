@@ -5,7 +5,7 @@ import com.timeyang.jkes.spring.jpa.util.SimpleAopUtil;
 import com.timeyang.jkes.core.util.Asserts;
 import com.timeyang.jkes.core.util.DocumentUtils;
 import com.timeyang.jkes.core.util.ReflectionUtils;
-import com.timeyang.jkes.core.elasticsearch.annotation.Document;
+import com.timeyang.jkes.core.annotation.Document;
 import com.timeyang.jkes.core.elasticsearch.indices.IndicesAdminClient;
 import com.timeyang.jkes.core.event.Event;
 import com.timeyang.jkes.core.event.EventContainer;

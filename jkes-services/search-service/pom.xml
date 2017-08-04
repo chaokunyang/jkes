@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.timeyang.base.jkes</groupId>
+    <groupId>com.timeyang.jkes.services</groupId>
     <artifactId>search-service</artifactId>
     <version>1.0-SNAPSHOT</version>
 

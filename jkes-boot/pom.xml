@@ -4,11 +4,12 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>jkes</artifactId>
-        <groupId>com.timeyang.base.jkes</groupId>
+        <groupId>com.timeyang.jkes</groupId>
         <version>1.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
+    <groupId>com.timeyang.jkes.boot</groupId>
     <artifactId>jkes-boot</artifactId>
     <packaging>pom</packaging>
     <modules>
@@ -17,7 +18,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.timeyang.base.jkes</groupId>
+            <groupId>com.timeyang.jkes</groupId>
             <artifactId>jkes-core</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>

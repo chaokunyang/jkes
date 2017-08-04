@@ -1,4 +1,4 @@
-package com.timeyang.jkes.core.elasticsearch.annotation;
+package com.timeyang.jkes.core.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

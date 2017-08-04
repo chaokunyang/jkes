@@ -1,6 +1,6 @@
 package com.timeyang.jkes.core.util;
 
-import com.timeyang.jkes.core.elasticsearch.annotation.Document;
+import com.timeyang.jkes.core.annotation.Document;
 import org.junit.Test;
 
 /**

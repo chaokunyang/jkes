@@ -1,11 +1,11 @@
 package com.timeyang.jkes.core.elasticsearch.mapping;
 
-import com.timeyang.jkes.core.elasticsearch.annotation.InnerField;
+import com.timeyang.jkes.core.annotation.Field;
+import com.timeyang.jkes.core.annotation.FieldType;
+import com.timeyang.jkes.core.annotation.InnerField;
+import com.timeyang.jkes.core.annotation.MultiFields;
 import com.timeyang.jkes.core.exception.FieldTypeInferException;
-import com.timeyang.jkes.core.util.FieldUtils;
-import com.timeyang.jkes.core.elasticsearch.annotation.Field;
-import com.timeyang.jkes.core.elasticsearch.annotation.FieldType;
-import com.timeyang.jkes.core.elasticsearch.annotation.MultiFields;
+import com.timeyang.jkes.core.util.DocumentUtils;
 import com.timeyang.jkes.core.util.ReflectionUtils;
 import com.timeyang.jkes.core.util.StringUtils;
 import org.json.JSONObject;
@@ -67,7 +67,7 @@ public class MappingBuilder {
             if(fieldAnnotation != null && !willRecursive(method)) {
 
                 // all single field mapping is added here, getSingleFieldMapping method just generate the value
-                properties.put(FieldUtils.getFieldName(method),
+                properties.put(DocumentUtils.getFieldName(method),
                         getSingleFieldMapping(method, fieldAnnotation));
 
             }else {
@@ -75,7 +75,7 @@ public class MappingBuilder {
                 if(multiFields != null && !willRecursive(method)) {
 
                     // all multi fields mapping is added here, getMultiFieldsMapping method just generate the value
-                    properties.put(FieldUtils.getFieldName(method),
+                    properties.put(DocumentUtils.getFieldName(method),
                             getMultiFieldsMapping(method, multiFields));
                 }
             }

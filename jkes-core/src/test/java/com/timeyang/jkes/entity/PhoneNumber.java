@@ -1,7 +1,7 @@
 package com.timeyang.jkes.entity;
 
-import com.timeyang.jkes.core.elasticsearch.annotation.Field;
-import com.timeyang.jkes.core.elasticsearch.annotation.FieldType;
+import com.timeyang.jkes.core.annotation.Field;
+import com.timeyang.jkes.core.annotation.FieldType;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

@@ -6,8 +6,8 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.timeyang.jkes.core.elasticsearch.exception.IllegalAnnotatedFieldException;
 import com.timeyang.jkes.core.util.StringUtils;
-import com.timeyang.jkes.core.elasticsearch.annotation.Field;
-import com.timeyang.jkes.core.elasticsearch.annotation.MultiFields;
+import com.timeyang.jkes.core.annotation.Field;
+import com.timeyang.jkes.core.annotation.MultiFields;
 import com.timeyang.jkes.core.util.ReflectionUtils;
 
 import java.io.IOException;

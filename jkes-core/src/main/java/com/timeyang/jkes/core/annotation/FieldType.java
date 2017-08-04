@@ -1,4 +1,4 @@
-package com.timeyang.jkes.core.elasticsearch.annotation;
+package com.timeyang.jkes.core.annotation;
 
 /**
  * ELasticSearch Data Type
