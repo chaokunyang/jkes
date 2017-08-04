@@ -64,7 +64,7 @@ public class JkesConf implements JkesProperties {
             Arrays.stream(ips).forEach(
                     ip -> urlStringBuilder.append(ip).append(":9200,")
             );
-            return urlStringBuilder.deleteCharAt(1).toString();
+            return urlStringBuilder.deleteCharAt(urlStringBuilder.length() - 1).toString();
         } catch (UnknownHostException e) {
             throw new RuntimeException(e);
         }
