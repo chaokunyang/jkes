@@ -1,0 +1,18 @@
+package com.timeyang.jkes.core.elasticsearch.annotation;
+
+import java.lang.annotation.*;
+
+/**
+ * Specify document id
+ * <p>
+ *     both document id and kafka message key rely on it
+ * </p>
+ * @see Field
+ * @author chaokunyang
+ */
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ ElementType.METHOD })
+@Documented
+public @interface DocumentId {
+}
+

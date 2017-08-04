@@ -1,0 +1,17 @@
+spring:
+  jpa:
+#    hibernate:
+#      ddl-auto:
+#        create-drop
+    properties:
+      hibernate:
+        hbm2ddl:
+          auto: update
+  datasource:
+    url: jdbc:mysql://localhost:3306/s_inte_test?useUnicode=true&characterEncoding=utf-8
+    username: s_inte_test
+    password: 123456
+    driver-class-name: com.mysql.jdbc.Driver
+
+server:
+  port: 8080

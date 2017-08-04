@@ -1,0 +1,26 @@
+.api textarea {
+    resize: none;
+}
+
+.api h3 {
+    display: inline-block;
+}
+.api #request_body_search {
+    width: 45%;
+    float: left;
+}
+.api #search_result {
+    width: 50%;
+    float: right;
+}
+.api #search_result #search_result_container {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    min-height: 25em;
+    overflow: auto;
+}
+.api #search_result #search_result_container pre {
+    padding: 0;
+     border: 0;
+     border-radius: 0;
+}

@@ -1,0 +1,23 @@
+
+/* header css */
+.masthead {
+    padding: 1em 0;
+    background-color: #fafafa;
+}
+.masthead .nav-main ul {
+    list-style: none;
+    padding-left: 0;
+    padding-right: 0;
+}
+.masthead .nav-main ul li {
+    display: inline-block;
+    padding: 0.3em 0.7em;
+}
+
+.content {
+
+}
+
+/* footer css */
+
+

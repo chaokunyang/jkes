@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <link rel="stylesheet" href="../../static/assets/css/base.css" th:href="@{/assets/css/base.css}" />
+    <link href="../../static/assets/css/base.css" th:href="@{/assets/css/common.css}" rel="stylesheet"/>
+    <link href="../../static/assets/css/page.css" th:href="@{/assets/css/page.css}" rel="stylesheet"/>
+</head>
+<body>
+<header th:fragment="header" class="masthead" role="banner">
+    <div th:class="container">
+        <nav role="navigation" class="nav-main">
+            <ul class="">
+                <li><a th:href="@{/}">主页</a></li>
+                <li><a th:href="@{/docs}">文档</a></li>
+                <!--<li><a href="http://timeyang.com">About</a></li>-->
+            </ul>
+        </nav>
+    </div>
+</header>
+</body>
+</html>

@@ -1,0 +1,4 @@
+server:
+  port: 9000
+
+jkes.es_servers: e1,e2,e3

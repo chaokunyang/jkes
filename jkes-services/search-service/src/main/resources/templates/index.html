@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="author" content="chaokunyang"/>
+
+    <title>Jkes Search Service</title>
+
+    <link rel="stylesheet" href="../static/assets/lib/font-awesome-4.7.0/css/font-awesome.min.css" th:href="@{/assets/lib/font-awesome-4.7.0/css/font-awesome.min.css}" />
+    <link rel="stylesheet" href="../static/assets/lib/bootstrap-3.3.7-dist/css/bootstrap.min.css" th:href="@{/assets/lib/bootstrap-3.3.7-dist/css/bootstrap.min.css}" />
+    <link rel="stylesheet" href="../static/assets/css/base.css" th:href="@{/assets/css/base.css}" />
+    <link href="../static/assets/css/page.css" th:href="@{/assets/css/page.css}" rel="stylesheet"/>
+    <link rel="stylesheet" href="../static/assets/css/index.css" th:href="@{/assets/css/index.css}" />
+</head>
+<body>
+
+    <div th:replace="fragments/header :: header">header</div>
+
+    <div id="index" class="content container">
+        <h1>Jkes Search Service</h1>
+
+        <ol>
+            <li><a href="api/v1" th:href="@{/api/v1}">api/v1</a></li>
+        </ol>
+    </div>
+
+    <div th:replace="fragments/footer :: footer">footer</div>
+
+</body>
+</html>

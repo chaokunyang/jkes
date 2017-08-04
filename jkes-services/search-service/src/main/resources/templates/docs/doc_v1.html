@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="author" content="chaokunyang"/>
+
+    <title>Jkes Search Service Api Doc</title>
+
+    <link rel="stylesheet" href="../../static/assets/lib/font-awesome-4.7.0/css/font-awesome.min.css" th:href="@{/assets/lib/font-awesome-4.7.0/css/font-awesome.min.css}" />
+    <link rel="stylesheet" href="../../static/assets/lib/bootstrap-3.3.7-dist/css/bootstrap.min.css" th:href="@{/assets/lib/bootstrap-3.3.7-dist/css/bootstrap.min.css}" />
+    <!--<link rel="stylesheet" href="../../static/assets/lib/highlight/monokai-sublime.css" th:href="@{/assets/lib/highlight/monokai-sublime.css}" />-->
+    <link rel="stylesheet" href="../../static/assets/lib/highlight/atom-one-light.css" th:href="@{/assets/lib/highlight/atom-one-light.css}" />
+
+    <link href="../../static/assets/css/page.css" th:href="@{/assets/css/page.css}" rel="stylesheet"/>
+</head>
+<body>
+
+    <div th:replace="fragments/header :: header">header</div>
+
+    <div class="container">
+        <ol>
+            <li>
+                <pre>api/v1/integration_test_person_group/person_group/1</pre>
+            </li>
+            <li>
+                <code>
+                    integration_test_person_group/person_group/_search?from=0&amp;size=10&amp;sort=id:asc
+                </code>
+                <pre contenteditable="true">
+{
+  "query": {
+    "nested": {
+      "path": "persons",
+      "score_mode": "avg",
+      "query": {
+        "bool": {
+          "must": [
+            {
+              "range": {
+                "persons.age": {
+                  "gt": 5
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}</pre></li>
+
+        </ol>
+    </div>
+
+    <div th:replace="fragments/footer :: footer">footer</div>
+
+    <script th:src="@{/assets/lib/jquery/jquery-3.2.1.min.js}" src="../../static/assets/lib/jquery/jquery-3.2.1.min.js"></script>
+    <script th:src="@{/assets/lib/bootstrap-3.3.7-dist/js/bootstrap.min.js}" src="../../static/assets/lib/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
+    <script th:src="@{/assets/lib/highlight/highlight.pack.js}" src="../../static/assets/lib/highlight/highlight.pack.js"></script>
+</body>
+</html>
