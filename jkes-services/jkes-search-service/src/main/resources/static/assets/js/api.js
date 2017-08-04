@@ -13,6 +13,8 @@ $("#request_body_search_form").submit(function (event) {
     if(path.indexOf("_search") == -1) {
         $.get(path, function (dada) {
             fillResult(dada);
+        }).fail(function (error) {
+            fillError(error);
         });
     }else {
         $.ajax({
