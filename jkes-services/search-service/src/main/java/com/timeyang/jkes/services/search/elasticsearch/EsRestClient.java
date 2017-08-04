@@ -1,6 +1,8 @@
 package com.timeyang.jkes.services.search.elasticsearch;
 
 import com.timeyang.jkes.services.search.config.JkesSearchProperties;
+import com.timeyang.jkes.services.search.exception.SearchException;
+import com.timeyang.jkes.services.search.exception.SearchResponseException;
 import com.timeyang.jkes.services.search.util.JsonUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -11,6 +13,7 @@ import org.apache.http.message.BasicHeader;
 import org.apache.http.nio.entity.NStringEntity;
 import org.elasticsearch.client.HttpAsyncResponseConsumerFactory;
 import org.elasticsearch.client.Response;
+import org.elasticsearch.client.ResponseException;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.sniff.SniffOnFailureListener;
 import org.elasticsearch.client.sniff.Sniffer;
@@ -39,7 +42,7 @@ public class EsRestClient {
         SniffOnFailureListener sniffOnFailureListener = new SniffOnFailureListener();
         Header[] defaultHeaders = {new BasicHeader("Content-Type", "application/json")};
 
-        String[] urls = jkesProperties.getEs_servers().split("\\s*,");
+        String[] urls = jkesProperties.getEs().getServers().split("\\s*,");
         HttpHost[] hosts = new HttpHost[urls.length];
         for (int i = 0; i < urls.length; i++) {
             hosts[i] = HttpHost.create(urls[i]);
@@ -81,8 +84,10 @@ public class EsRestClient {
     public Response performRequest(String method, String endpoint) {
         try {
             return this.restClient.performRequest(method, endpoint);
+        } catch (ResponseException e) {
+            throw new SearchResponseException(e);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new SearchException(e);
         }
     }
 
@@ -100,8 +105,10 @@ public class EsRestClient {
         try {
             HttpEntity payload = new NStringEntity(JsonUtils.convertToString(entity), ContentType.APPLICATION_JSON);
             return restClient.performRequest(method, endpoint, params, payload, HttpAsyncResponseConsumerFactory.DEFAULT, headers);
+        } catch (ResponseException e) {
+            throw new SearchResponseException(e);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new SearchException(e);
         }
     }
 

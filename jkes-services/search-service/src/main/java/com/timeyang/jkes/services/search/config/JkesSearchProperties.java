@@ -9,5 +9,10 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @Data
 @ConfigurationProperties(prefix = "jkes")
 public class JkesSearchProperties {
-    private String es_servers;
+    private ESConfig es;
+
+    @Data
+    public static class ESConfig {
+        private String servers;
+    }
 }

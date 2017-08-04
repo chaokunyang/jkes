@@ -27,7 +27,7 @@ public class EsJavaClient {
                 .put("cluster.name", "ucloud-search")
                 .put("client.transport.sniff", true).build();
 
-        String[] urls = jkesProperties.getEs_servers().split("\\s*,");
+        String[] urls = jkesProperties.getEs().getServers().split("\\s*,");
         TransportAddress[] addresses = new TransportAddress[urls.length];
         for (int i = 0; i < urls.length; i++) {
             try {

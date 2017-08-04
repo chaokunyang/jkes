@@ -22,6 +22,9 @@ $("#request_body_search_form").submit(function (event) {
             success: function (data) {
                 fillResult(data);
             },
+            error: function (error) {
+                fillError(error);
+            },
             data: JSON.stringify(request_body)
         });
     }
@@ -38,6 +41,20 @@ $("#request_body_search_form").submit(function (event) {
         $('pre code').each(function(i, block) {
             hljs.highlightBlock(block);
         });
-    }
+    };
+
+    function fillError(error) {
+        var json = JSON.stringify(error.responseJSON, null, 4);
+        var code = $("<code contenteditable='true'/>").append(json);
+        var pre = $("<pre/>").append(code);
+
+        target_container.empty();
+        target_container.append(
+            pre
+        );
+        $('pre code').each(function(i, block) {
+            hljs.highlightBlock(block);
+        });
+    };
 });
 
