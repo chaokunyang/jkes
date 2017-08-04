@@ -54,3 +54,10 @@ run
 ```
 docker run chaokunyang/jkes-search-service --env APP_ARGS="--spring.profiles.active=test"
 ```
+
+You can skip Docker goals bound to Maven phases with:
+
+- -DskipDockerBuild to skip image build
+- -DskipDockerTag to skip image tag
+- -DskipDockerPush to skip image push
+- -DskipDocker to skip any Docker goals

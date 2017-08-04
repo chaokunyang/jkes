@@ -18,12 +18,12 @@ import java.util.concurrent.Future;
  * @author chaokunyang
  */
 @Named
-public class SearchKafkaProducer {
+public class JkesKafkaProducer {
 
     private KafkaProducer<String, Object> producer;
 
     @Inject
-    public SearchKafkaProducer(JkesProperties jkesProperties) {
+    public JkesKafkaProducer(JkesProperties jkesProperties) {
         Properties props = new Properties();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, jkesProperties.getKafkaBootstrapServers());
         props.put("acks", "all");

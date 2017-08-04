@@ -1,7 +1,7 @@
 package com.timeyang.jkes.spring.jpa.eventual.schedule;
 
 import com.timeyang.jkes.spring.jpa.eventual.entity.oracle.MessagePublish;
-import com.timeyang.jkes.core.kafka.producer.SearchKafkaProducer;
+import com.timeyang.jkes.core.kafka.producer.JkesKafkaProducer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -22,7 +22,7 @@ public class MessagePublishService {
     private MessagePublishRepository messagePublishRepository;
 
     @Autowired
-    private SearchKafkaProducer producerClient;
+    private JkesKafkaProducer producerClient;
 
     public void deletePublishedMessageRecord() {
 

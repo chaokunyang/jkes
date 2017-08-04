@@ -2,7 +2,7 @@ package com.timeyang.jkes.spring.jpa;
 
 import com.timeyang.jkes.core.exception.JkesException;
 import com.timeyang.jkes.core.kafka.connect.KafkaConnectClient;
-import com.timeyang.jkes.core.kafka.producer.SearchKafkaProducer;
+import com.timeyang.jkes.core.kafka.producer.JkesKafkaProducer;
 import com.timeyang.jkes.core.kafka.producer.Topics;
 import com.timeyang.jkes.core.kafka.util.EsKafkaUtils;
 import com.timeyang.jkes.core.util.DocumentUtils;
@@ -30,7 +30,7 @@ public class ConcurrentIndexer {
 
     private static final Logger LOGGER = Logger.getLogger(ConcurrentIndexer.class);
 
-    private final SearchKafkaProducer searchKafkaProducer;
+    private final JkesKafkaProducer jkesKafkaProducer;
     private final KafkaConnectClient kafkaConnectClient;
 
     private LinkedList<IndexTask<?>> tasks;
@@ -40,9 +40,9 @@ public class ConcurrentIndexer {
     private ExecutorService exec;
 
     @Inject
-    public ConcurrentIndexer(SearchKafkaProducer searchKafkaProducer, KafkaConnectClient kafkaConnectClient) {
+    public ConcurrentIndexer(JkesKafkaProducer jkesKafkaProducer, KafkaConnectClient kafkaConnectClient) {
         this.tasks = new LinkedList<>();
-        this.searchKafkaProducer = searchKafkaProducer;
+        this.jkesKafkaProducer = jkesKafkaProducer;
         this.kafkaConnectClient = kafkaConnectClient;
 
         this.exec = Executors.newFixedThreadPool(nThreads);
@@ -93,11 +93,11 @@ public class ConcurrentIndexer {
 
             String topic = EsKafkaUtils.getTopic(domainClass);
             if(Topics.contains(topic)) {
-                searchKafkaProducer.send(content);
+                jkesKafkaProducer.send(content);
             }else {
                 Iterator<?> iterator = content.iterator();
                 if (iterator.hasNext()) {
-                    Future<RecordMetadata> future = searchKafkaProducer.send(iterator.next(),
+                    Future<RecordMetadata> future = jkesKafkaProducer.send(iterator.next(),
                             (metadata, exception) -> {
                                 kafkaConnectClient.createEsSinkConnectorIfAbsent(domainClass);
                                 Topics.add(topic);
@@ -109,7 +109,7 @@ public class ConcurrentIndexer {
                     }
                 }
 
-                iterator.forEachRemaining(searchKafkaProducer::send);
+                iterator.forEachRemaining(jkesKafkaProducer::send);
             }
         }
     }

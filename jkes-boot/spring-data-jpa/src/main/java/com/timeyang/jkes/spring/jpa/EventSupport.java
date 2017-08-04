@@ -14,7 +14,7 @@ import com.timeyang.jkes.core.exception.IllegalMemberAccessException;
 import com.timeyang.jkes.core.exception.ReflectiveInvocationTargetException;
 import com.timeyang.jkes.core.exception.JkesException;
 import com.timeyang.jkes.core.kafka.connect.KafkaConnectClient;
-import com.timeyang.jkes.core.kafka.producer.SearchKafkaProducer;
+import com.timeyang.jkes.core.kafka.producer.JkesKafkaProducer;
 import com.timeyang.jkes.core.kafka.producer.Topics;
 import com.timeyang.jkes.core.kafka.util.EsKafkaConnectUtils;
 import com.timeyang.jkes.core.kafka.util.EsKafkaUtils;
@@ -45,7 +45,7 @@ import java.util.concurrent.Future;
 @Named
 public class EventSupport {
 
-    private final SearchKafkaProducer searchKafkaProducer;
+    private final JkesKafkaProducer jkesKafkaProducer;
     private final IndicesAdminClient indicesAdminClient;
     private final KafkaConnectClient kafkaConnectClient;
 
@@ -53,8 +53,8 @@ public class EventSupport {
     private EntityManager em;
 
     @Inject
-    public EventSupport(SearchKafkaProducer searchKafkaProducer, IndicesAdminClient indicesAdminClient, KafkaConnectClient kafkaConnectClient) {
-        this.searchKafkaProducer = searchKafkaProducer;
+    public EventSupport(JkesKafkaProducer jkesKafkaProducer, IndicesAdminClient indicesAdminClient, KafkaConnectClient kafkaConnectClient) {
+        this.jkesKafkaProducer = jkesKafkaProducer;
         this.indicesAdminClient = indicesAdminClient;
         this.kafkaConnectClient = kafkaConnectClient;
     }
@@ -145,9 +145,9 @@ public class EventSupport {
                 Class<?> domainClass = saveEvent.getValue().getClass();
                 String topic = EsKafkaUtils.getTopic(domainClass);
                 if(Topics.contains(topic)) {
-                    searchKafkaProducer.send(saveEvent.getValue());
+                    jkesKafkaProducer.send(saveEvent.getValue());
                 }else {
-                    Future<RecordMetadata> future = searchKafkaProducer.send(saveEvent.getValue(),
+                    Future<RecordMetadata> future = jkesKafkaProducer.send(saveEvent.getValue(),
                             (metadata, exception) -> {
                                 kafkaConnectClient.createEsSinkConnectorIfAbsent(domainClass);
                                 Topics.add(topic);
@@ -162,7 +162,7 @@ public class EventSupport {
 
             }else if(event.getEventType() == Event.EventType.DELETE) {
                 Event.DeleteEvent deleteEvent = (Event.DeleteEvent) event;
-                searchKafkaProducer.send("delete", "", deleteEvent);
+                jkesKafkaProducer.send("delete", "", deleteEvent);
             }else if(event.getEventType() == Event.EventType.DELETE_ALL) {
                 Event.DeleteEvent deleteAllEvent = (Event.DeleteEvent) event;
                 Class<?> domainClass = deleteAllEvent.getDomainClass();

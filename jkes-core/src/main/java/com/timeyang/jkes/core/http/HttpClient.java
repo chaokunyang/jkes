@@ -103,7 +103,7 @@ public class HttpClient {
         return httpRequestBase;
     }
 
-    private URI buildUri(String path, Map<String, String> params) {
+    static URI buildUri(String path, Map<String, String> params) {
         Objects.requireNonNull(path, "path must not be null");
         try {
             URIBuilder uriBuilder = new URIBuilder(path);

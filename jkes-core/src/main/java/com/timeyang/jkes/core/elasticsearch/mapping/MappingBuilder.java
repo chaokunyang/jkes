@@ -11,7 +11,9 @@ import com.timeyang.jkes.core.util.StringUtils;
 import org.json.JSONObject;
 
 import java.lang.reflect.Method;
+import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Set;
 
 /**
  * <p>generate mapping base on search annotation on entity</p>
@@ -29,7 +31,19 @@ import java.util.LinkedList;
  * @author chaokunyang
  */
 public class MappingBuilder {
-    
+
+    private static final Set<String> primitives = new HashSet<>(8);
+    static {
+        primitives.add("byte");
+        primitives.add("short");
+        primitives.add("int");
+        primitives.add("long");
+        primitives.add("float");
+        primitives.add("double");
+        primitives.add("boolean");
+        primitives.add("char");
+    }
+
     private static final String FIELD_TYPE = "type";
     private static final String FIELD_STORE = "store";
     private static final String FIELD_ANALYZER = "analyzer";
@@ -61,7 +75,7 @@ public class MappingBuilder {
         context.addLast(clazz);
 
         JSONObject properties = new JSONObject();
-        Method[] methods = clazz.getMethods();
+        Method[] methods = clazz.getMethods(); // include superclass methods
         for(Method method : methods) {
             Field fieldAnnotation = method.getAnnotation(Field.class);
             if(fieldAnnotation != null && !willRecursive(method)) {
@@ -94,6 +108,8 @@ public class MappingBuilder {
     private boolean willRecursive(Method method) {
 
         String returnTypeName = ReflectionUtils.getInnermostType(method);
+        if(primitives.contains(returnTypeName)) return false;
+
         Class<?> returnType;
         try {
             returnType = Class.forName(returnTypeName);

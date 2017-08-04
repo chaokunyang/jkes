@@ -2,7 +2,7 @@ package com.timeyang.jkes.integration_test;
 
 import com.timeyang.jkes.core.exception.JkesException;
 import com.timeyang.jkes.core.kafka.connect.KafkaConnectClient;
-import com.timeyang.jkes.core.kafka.producer.SearchKafkaProducer;
+import com.timeyang.jkes.core.kafka.producer.JkesKafkaProducer;
 import com.timeyang.jkes.core.kafka.producer.Topics;
 import com.timeyang.jkes.core.kafka.util.EsKafkaUtils;
 import com.timeyang.jkes.integration_test.domain.PersonGroup;
@@ -33,7 +33,7 @@ public class ApplicationTest {
     private PersonGroupRepository personGroupRepository;
 
     @Autowired
-    private SearchKafkaProducer searchKafkaProducer;
+    private JkesKafkaProducer jkesKafkaProducer;
 
     @Autowired
     private KafkaConnectClient kafkaConnectClient;
@@ -99,11 +99,11 @@ public class ApplicationTest {
 
                     String topic = EsKafkaUtils.getTopic(PersonGroup.class);
                     if(Topics.contains(topic)) {
-                        searchKafkaProducer.send(pageResult);
+                        jkesKafkaProducer.send(pageResult);
                     }else {
                         Iterator<PersonGroup> iterator = pageResult.iterator();
                         if(iterator.hasNext()) {
-                            Future<RecordMetadata> future = searchKafkaProducer.send(iterator.next(),
+                            Future<RecordMetadata> future = jkesKafkaProducer.send(iterator.next(),
                                     (metadata, exception) -> {
                                         kafkaConnectClient.createEsSinkConnectorIfAbsent(PersonGroup.class);
                                         Topics.add(topic);
@@ -115,7 +115,7 @@ public class ApplicationTest {
                             }
                         }
 
-                        iterator.forEachRemaining(searchKafkaProducer::send);
+                        iterator.forEachRemaining(jkesKafkaProducer::send);
                     }
                     p++;
                 }
@@ -175,9 +175,9 @@ public class ApplicationTest {
                 long id = (long)(i * sizePerThread + j);
                 personGroup.setId(id);
                 if(Topics.contains(topic)) {
-                    searchKafkaProducer.send(personGroup);
+                    jkesKafkaProducer.send(personGroup);
                 }else {
-                    Future<RecordMetadata> future = searchKafkaProducer.send(personGroup,
+                    Future<RecordMetadata> future = jkesKafkaProducer.send(personGroup,
                             (metadata, exception) -> {
                                 kafkaConnectClient.createEsSinkConnectorIfAbsent(PersonGroup.class);
                                 Topics.add(topic);

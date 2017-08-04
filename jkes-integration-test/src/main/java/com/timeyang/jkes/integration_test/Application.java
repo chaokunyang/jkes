@@ -4,7 +4,7 @@ import com.timeyang.jkes.integration_test.domain.Person;
 import com.timeyang.jkes.integration_test.domain.PersonGroup;
 import com.timeyang.jkes.integration_test.repository.PersonGroupRepository;
 import com.timeyang.jkes.core.kafka.connect.KafkaConnectClient;
-import com.timeyang.jkes.core.kafka.producer.SearchKafkaProducer;
+import com.timeyang.jkes.core.kafka.producer.JkesKafkaProducer;
 import com.timeyang.jkes.spring.jpa.ConcurrentIndexer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +33,7 @@ public class Application {
     private PersonGroupRepository personGroupRepository;
 
     @Autowired
-    private SearchKafkaProducer searchKafkaProducer;
+    private JkesKafkaProducer jkesKafkaProducer;
 
     @Autowired
     private KafkaConnectClient kafkaConnectClient;

@@ -1,5 +1,6 @@
 package com.timeyang.jkes.integration_test.config;
 
+import com.timeyang.jkes.core.http.HttpUtils;
 import com.timeyang.jkes.core.support.Config;
 import com.timeyang.jkes.core.support.JkesProperties;
 import org.springframework.beans.factory.annotation.Value;
@@ -9,13 +10,15 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 
 import javax.annotation.PostConstruct;
+import java.net.UnknownHostException;
+import java.util.Arrays;
 
 /**
  * @author chaokunyang
  */
 @Configuration
 @PropertySource("classpath:jkes.properties")
-public class JkesConfig implements JkesProperties {
+public class JkesConf implements JkesProperties {
 
     @Bean
     public static PropertySourcesPlaceholderConfigurer
@@ -55,7 +58,14 @@ public class JkesConfig implements JkesProperties {
 
     @Override
     public String getKafkaBootstrapServers() {
-        return kafkaBootstrapServers;
+        try {
+            String[] ips = HttpUtils.getIpsFormDomainNames(kafkaBootstrapServers.split(","));
+            StringBuilder urlStringBuilder = new StringBuilder();
+            Arrays.stream(ips).forEach(ip -> urlStringBuilder.append(ip).append(":9200,"));
+            return urlStringBuilder.deleteCharAt(urlStringBuilder.length() - 5).toString();
+        } catch (UnknownHostException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
