@@ -14,9 +14,9 @@
     <artifactId>jkes-services</artifactId>
     <packaging>pom</packaging>
     <modules>
-        <module>manager-app</module>
-        <module>delete-service</module>
-        <module>search-service</module>
+        <module>jkes-manager-app</module>
+        <module>jkes-delete-service</module>
+        <module>jkes-search-service</module>
     </modules>
 
 </project>
