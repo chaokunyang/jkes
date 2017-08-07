@@ -41,9 +41,9 @@ public class ApplicationTest {
 
     @Test
     public void test() {
-        // addData();
+        addData();
         // queryAndSendData();
-        // queryAndSend();
+        queryAndSend();
         sendData();
     }
 
@@ -132,7 +132,7 @@ public class ApplicationTest {
             }
         });
 
-        concurrentIndexer.start();
+        concurrentIndexer.startAll();
         try {
             concurrentIndexer.awaitTermination(Integer.MAX_VALUE, TimeUnit.SECONDS);
         } catch (InterruptedException e) {

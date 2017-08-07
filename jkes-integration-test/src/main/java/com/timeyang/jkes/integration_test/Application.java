@@ -34,8 +34,8 @@ public class Application {
     @Bean
     public CommandLineRunner commandLineRunner() {
         return args -> {
-            addData();
-            deleteData();
+            // addData();
+            // deleteData();
         };
     }
 

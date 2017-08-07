@@ -152,7 +152,7 @@ public class SearchPlatformTransactionManager extends AbstractPlatformTransactio
      * for creating and holding a savepoint. If the transaction object does not implement
      * the SavepointManager interface, a NestedTransactionNotSupportedException will be
      * thrown. Else, the SavepointManager will be asked to create a new savepoint to
-     * demarcate the start of the nested transaction.
+     * demarcate the startAll of the nested transaction.
      * <p>Subclasses can override this to return {@code false}, causing a further
      * call to {@code doBegin} - within the context of an already existing transaction.
      * The {@code doBegin} implementation needs to handle this accordingly in such
@@ -175,13 +175,13 @@ public class SearchPlatformTransactionManager extends AbstractPlatformTransactio
      * definition. Does not have to care about applying the propagation behavior,
      * as this has already been handled by this abstract manager.
      * <p>This method gets called when the transaction manager has decided to actually
-     * start a new transaction. Either there wasn't any transaction before, or the
+     * startAll a new transaction. Either there wasn't any transaction before, or the
      * previous transaction has been suspended.
      * <p>A special scenario is a nested transaction without savepoint: If
      * {@code useSavepointForNestedTransaction()} returns "false", this method
-     * will be called to start a nested transaction when necessary. In such a context,
+     * will be called to startAll a nested transaction when necessary. In such a context,
      * there will be an active transaction: The implementation of this method has
-     * to detect this and start an appropriate nested transaction.
+     * to detect this and startAll an appropriate nested transaction.
      * @param transaction transaction object returned by {@code doGetTransaction}
      * @param definition TransactionDefinition instance, describing propagation
      * behavior, isolation level, read-only flag, timeout, and transaction name

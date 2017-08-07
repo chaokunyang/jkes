@@ -185,6 +185,8 @@ public class EventSupport {
     }
 
     private void save(Object entity, LinkedList<Object> context) {
+        if(entity == null) return;
+
         context.addLast(entity);
 
         EventContainer.addEvent(new Event.SaveEvent(Event.EventType.SAVE, entity));
@@ -226,6 +228,8 @@ public class EventSupport {
     }
 
     private void deleteEntity(Object entity, LinkedList<Object> context) {
+        if(entity == null) return;
+
         context.addLast(entity);
 
         Object id = ReflectionUtils.getAnnotatedFieldValue(entity, Id.class);
