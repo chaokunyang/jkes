@@ -1,5 +1,6 @@
 package com.timeyang.jkes.core.event;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.ToString;
 
@@ -10,6 +11,7 @@ import lombok.ToString;
  */
 public abstract class Event {
 
+    @JsonIgnore
     private EventType eventType;
 
     public Event(EventType eventType) {
@@ -52,23 +54,35 @@ public abstract class Event {
 
         private String type;
 
-        private Class<?> domainClass;
+        private Long version;
 
-        public DeleteEvent(EventType eventType, Object id, String index, String type) {
+        public DeleteEvent(EventType eventType, Object id, String index, String type, Long version) {
             super(eventType);
             this.id = id;
             this.index = index;
             this.type = type;
+            this.version = version;
         }
 
-        public DeleteEvent(EventType eventType, Object id, String index, String type, Class<?> domainClass) {
+    }
+
+    /**
+     * DeleteAllEvent
+     * @author chaokunyang
+     */
+    @Getter
+    @ToString
+    public static class DeleteAllEvent extends Event {
+        private final String index;
+        private final String type;
+        private final Class<?> domainClass;
+
+        public DeleteAllEvent(EventType eventType, String index, String type, Class<?> domainClass) {
             super(eventType);
-            this.id = id;
             this.index = index;
             this.type = type;
             this.domainClass = domainClass;
         }
-
     }
 
     /**

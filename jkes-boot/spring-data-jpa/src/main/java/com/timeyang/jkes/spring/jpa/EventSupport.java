@@ -164,7 +164,7 @@ public class EventSupport {
                 Event.DeleteEvent deleteEvent = (Event.DeleteEvent) event;
                 jkesKafkaProducer.send("delete", "", deleteEvent);
             }else if(event.getEventType() == Event.EventType.DELETE_ALL) {
-                Event.DeleteEvent deleteAllEvent = (Event.DeleteEvent) event;
+                Event.DeleteAllEvent deleteAllEvent = (Event.DeleteAllEvent) event;
                 Class<?> domainClass = deleteAllEvent.getDomainClass();
 
                 // delete index
@@ -243,7 +243,7 @@ public class EventSupport {
         String index = DocumentUtils.getIndexName(domainClass);
         String type = DocumentUtils.getTypeName(domainClass);
 
-        EventContainer.addEvent(new Event.DeleteEvent(Event.EventType.DELETE, id, index, type));
+        EventContainer.addEvent(new Event.DeleteEvent(Event.EventType.DELETE, id, index, type, null));
 
         Collection<Object> cascadeEntity = getCascadeEntity(entity, context);
         cascadeEntity.forEach((e) -> {
@@ -266,7 +266,7 @@ public class EventSupport {
 
         String index = DocumentUtils.getIndexName(domainClass);
         String type = DocumentUtils.getTypeName(domainClass);
-        EventContainer.addEvent(new Event.DeleteEvent(Event.EventType.DELETE_ALL, null, index, type, domainClass));
+        EventContainer.addEvent(new Event.DeleteAllEvent(Event.EventType.DELETE_ALL, index, type, domainClass));
 
         Set<Class<?>> cascadeClasses = getCascadeClass(domainClass, context);
         cascadeClasses.forEach(clazz -> deleteAll(clazz, context));
