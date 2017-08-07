@@ -28,7 +28,7 @@ public class KafkaConnectClientTest {
         KafkaConnectClient kafkaConnectClient = new KafkaConnectClient(jkesProperties, new DocumentMetadata(jkesProperties));
         String connectorName = KafkaConnectUtils.getConnectorName(Person.class);
         if(!kafkaConnectClient.checkConnectorExists(connectorName))
-            kafkaConnectClient.createEsSinkConnector(Person.class);
+            kafkaConnectClient.createIndexSinkConnectorIfAbsent(Person.class);
     }
 
     @Test

@@ -10,12 +10,17 @@ import java.util.Arrays;
  */
 public class HttpUtilsTest {
     @Test
+    public void parseIpFromUrl() throws Exception {
+        System.out.println(HttpUtils.parseIpFromUrl("http://timeyang.com"));
+    }
+
+    @Test
     public void getIpsFormUrls() throws Exception {
-        System.out.println(Arrays.toString(HttpUtils.getIpsFormUrls("http://timeyang.com")));
+        System.out.println(Arrays.toString(HttpUtils.getIpsFromUrls("http://timeyang.com")));
     }
 
     @Test
     public void getIpsFormDomainNames() throws Exception {
-        System.out.println(Arrays.toString(HttpUtils.getIpsFormDomainNames("timeyang.com", "github.com")));
+        System.out.println(Arrays.toString(HttpUtils.getIpsFromDomainNames("timeyang.com", "github.com")));
     }
 }

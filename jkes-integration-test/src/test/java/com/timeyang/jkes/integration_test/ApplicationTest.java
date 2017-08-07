@@ -1,14 +1,11 @@
 package com.timeyang.jkes.integration_test;
 
-import com.timeyang.jkes.core.exception.JkesException;
 import com.timeyang.jkes.core.kafka.connect.KafkaConnectClient;
 import com.timeyang.jkes.core.kafka.producer.JkesKafkaProducer;
-import com.timeyang.jkes.core.kafka.producer.Topics;
 import com.timeyang.jkes.core.kafka.util.KafkaUtils;
 import com.timeyang.jkes.integration_test.domain.PersonGroup;
 import com.timeyang.jkes.integration_test.repository.PersonGroupRepository;
 import com.timeyang.jkes.spring.jpa.ConcurrentIndexer;
-import org.apache.kafka.clients.producer.RecordMetadata;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,9 +16,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author chaokunyang
@@ -97,26 +95,7 @@ public class ApplicationTest {
                     Pageable pageable = new PageRequest(p, pageSize);
                     Page<PersonGroup> pageResult = personGroupRepository.findAll(pageable);
 
-                    String topic = KafkaUtils.getTopic(PersonGroup.class);
-                    if(Topics.contains(topic)) {
-                        jkesKafkaProducer.send(pageResult);
-                    }else {
-                        Iterator<PersonGroup> iterator = pageResult.iterator();
-                        if(iterator.hasNext()) {
-                            Future<RecordMetadata> future = jkesKafkaProducer.send(iterator.next(),
-                                    (metadata, exception) -> {
-                                        kafkaConnectClient.createEsSinkConnectorIfAbsent(PersonGroup.class);
-                                        Topics.add(topic);
-                                    });
-                            try {
-                                future.get(); // make the callback block, to ensure esSinkConnector exists
-                            } catch (InterruptedException | ExecutionException e) {
-                                throw new JkesException(e);
-                            }
-                        }
-
-                        iterator.forEachRemaining(jkesKafkaProducer::send);
-                    }
+                    jkesKafkaProducer.send(pageResult);
                     p++;
                 }
             });
@@ -174,21 +153,7 @@ public class ApplicationTest {
                 PersonGroup personGroup = generatePersonGroup(j);
                 long id = (long)(i * sizePerThread + j);
                 personGroup.setId(id);
-                if(Topics.contains(topic)) {
-                    jkesKafkaProducer.send(personGroup);
-                }else {
-                    Future<RecordMetadata> future = jkesKafkaProducer.send(personGroup,
-                            (metadata, exception) -> {
-                                kafkaConnectClient.createEsSinkConnectorIfAbsent(PersonGroup.class);
-                                Topics.add(topic);
-                            });
-                    try {
-                        future.get(); // make the callback block, to ensure esSinkConnector exists
-
-                    } catch (InterruptedException | ExecutionException e) {
-                        throw new JkesException(e);
-                    }
-                }
+                jkesKafkaProducer.send(personGroup);
             }
 
         }

@@ -34,14 +34,18 @@ public class KafkaConnectClient {
 
     private static final HttpClient HTTP_CLIENT = HttpClient.getInstance();
 
+    private final JkesProperties jkesProperties;
     private final DocumentMetadata documentMetadata;
     private final String[] urls;
 
-    // locks for connectors
+    // locks for index connectors
     private final ConcurrentMap<String, Lock> locks = new ConcurrentHashMap<>();
+    // lock for delete connector
+    private final Lock deleteLock = new ReentrantLock();
 
     @Inject
     public KafkaConnectClient(JkesProperties jkesProperties, DocumentMetadata documentMetadata) {
+        this.jkesProperties = jkesProperties;
         this.urls = jkesProperties.getKafkaConnectServers().split("\\s*,");
         this.documentMetadata = documentMetadata;
     }
@@ -51,11 +55,13 @@ public class KafkaConnectClient {
         documentMetadata.getAnnotatedClasses().forEach(clazz -> {
             String connectorName = KafkaConnectUtils.getConnectorName(clazz);
             if(checkConnectorExists(connectorName)) {
-                updateEsSinkConnector(clazz);
+                updateIndexSinkConnector(clazz);
             }else {
-                createEsSinkConnector(clazz);
+                createIndexSinkConnectorIfAbsent(clazz);
             }
         });
+
+        createDeleteSinkConnectorIfAbsent();
     }
 
     public JSONObject getConnectConfig(String connectorName) {
@@ -75,43 +81,7 @@ public class KafkaConnectClient {
      *
      * @param document document to be indexed
      */
-    public void createEsSinkConnector(Class<?> document) {
-        Asserts.check(document.isAnnotationPresent(Document.class), document + " must be annotated with " + Document.class + " to create kafka connector");
-
-        String connectorName = KafkaConnectUtils.getConnectorName(document);
-
-        if(checkConnectorExists(connectorName))
-            throw new IllegalArgumentException("The specified class " + document + " already have a corresponding connector[" + connectorName + "]");
-
-        JSONObject payload = new JSONObject();
-        payload.put("name", connectorName);
-
-        JSONObject config = ConnectorConfigTemplates.getEsSinkConfigTemplate();
-        String topic = KafkaUtils.getTopic(document);
-        config.put("topics", topic);
-        config.put("type.name", DocumentUtils.getTypeName(document));
-        config.put("topic.index.map", getTopicIndexMap(topic, document));
-
-        payload.put("config", config);
-        try {
-            String url = getRandomUrl();
-
-            // happen-before is ensured by ConcurrentMap
-            // see http://docs.oracle.com/javase/6/docs/api/java/util/concurrent/package-summary.html Memory Consistency Properties
-            locks.putIfAbsent(connectorName, new ReentrantLock());
-            try {
-                locks.get(connectorName).lock();
-                HTTP_CLIENT.post(url, "connectors", payload);
-            }finally {
-                locks.get(connectorName).unlock();
-            }
-
-        } catch (IOException e) {
-            throw new KafkaConnectRequestException(e);
-        }
-    }
-
-    public boolean createEsSinkConnectorIfAbsent(Class<?> document) {
+    public boolean createIndexSinkConnectorIfAbsent(Class<?> document) {
         Asserts.check(document.isAnnotationPresent(Document.class), document + " must be annotated with " + Document.class + " to create kafka connector");
         String connectorName = KafkaConnectUtils.getConnectorName(document);
 
@@ -119,22 +89,34 @@ public class KafkaConnectClient {
         try {
             locks.get(connectorName).lock();
             if(!checkConnectorExists(connectorName)) {
-                createEsSinkConnector(document);
+
+                JSONObject payload = new JSONObject();
+                payload.put("name", connectorName);
+                JSONObject config = ConnectorConfigTemplates.getIndexSinkConfigTemplate();
+                String topic = KafkaUtils.getTopic(document);
+                config.put("topics", topic);
+                config.put("type.name", DocumentUtils.getTypeName(document));
+                config.put("topic.index.map", getTopicIndexMap(topic, document));
+                payload.put("config", config);
+
+                HTTP_CLIENT.post(getRandomUrl(), "connectors", payload);
                 return true;
             }
-        }finally {
+        } catch (IOException e) {
+            throw new KafkaConnectRequestException(e);
+        } finally {
             locks.get(connectorName).unlock();
         }
 
         return false;
     }
 
-    public void updateEsSinkConnector(Class<?> document) {
+    public void updateIndexSinkConnector(Class<?> document) {
         Asserts.check(document.isAnnotationPresent(Document.class), document + " must be annotated with " + Document.class + " to update kafka connector");
 
         String connectorName = KafkaConnectUtils.getConnectorName(document);
 
-        JSONObject config = ConnectorConfigTemplates.getEsSinkConfigTemplate();
+        JSONObject config = ConnectorConfigTemplates.getIndexSinkConfigTemplate();
         String topic = KafkaUtils.getTopic(document);
         config.put("topics", topic);
         config.put("type.name", DocumentUtils.getTypeName(document));
@@ -151,6 +133,27 @@ public class KafkaConnectClient {
 
         } catch (IOException e) {
             throw new KafkaConnectRequestException(e);
+        }
+    }
+
+    public boolean createDeleteSinkConnectorIfAbsent() {
+        try {
+            deleteLock.lock();
+            String deleterConnector = jkesProperties.getClientId() + "_delete_sink";
+
+            if(checkConnectorExists(deleterConnector)) return false;
+
+            JSONObject payload = new JSONObject();
+            payload.put("name", deleterConnector);
+            JSONObject config = ConnectorConfigTemplates.getDeleteSinkConfigTemplate();
+            payload.put("config", config);
+
+            HTTP_CLIENT.post(getRandomUrl(), "connectors", payload);
+            return true;
+        } catch (IOException e) {
+            throw new KafkaConnectRequestException(e);
+        }finally {
+            deleteLock.unlock();
         }
     }
 

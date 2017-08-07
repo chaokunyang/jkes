@@ -100,4 +100,8 @@ public class KafkaUtils {
 
         throw new IlllegalSearchStateException(domainClass + " doesn't have a document id. You either annotated a method with " + DocumentId.class + " , or annotated a field or getter method with " + Id.class);
     }
+
+    public static String getDeleteTopic() {
+        return Config.getJkesProperties().getClientId() + "_" + "delete";
+    }
 }

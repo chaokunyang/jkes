@@ -10,6 +10,9 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 
 import javax.annotation.PostConstruct;
+import java.net.InetAddress;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 
@@ -49,18 +52,7 @@ public class JkesConf extends DefaultJkesPropertiesImpl {
 
     @Override
     public String getKafkaBootstrapServers() {
-        StringBuilder stringBuilder = new StringBuilder();
-        String[] urls = kafkaBootstrapServers.split(",");
-        Arrays.stream(urls).forEach(url -> {
-            String[] split = url.split(":");
-            try {
-                stringBuilder.append(HttpUtils.getIpsFormDomainName(split[0])).append(":").append(split[1]).append(",");
-            } catch (UnknownHostException e) {
-                throw new RuntimeException(e);
-            }
-        });
-
-        return stringBuilder.deleteCharAt(stringBuilder.length() - 1).toString();
+        return replaceDomainNameWithIp(this.kafkaBootstrapServers);
     }
 
     @Override
@@ -70,7 +62,7 @@ public class JkesConf extends DefaultJkesPropertiesImpl {
 
     @Override
     public String getEsBootstrapServers() {
-        return esBootstrapServers;
+        return replaceDomainNameWithIp(this.esBootstrapServers);
     }
 
     @Override
@@ -101,5 +93,36 @@ public class JkesConf extends DefaultJkesPropertiesImpl {
 
     public void setClientId(String clientId) {
         this.clientId = clientId;
+    }
+
+    // mainly used for test. in inner env, use ip directly or domainName if dns parse is available
+    private String replaceDomainNameWithIp(String u) {
+        StringBuilder stringBuilder = new StringBuilder();
+        String[] urls = u.split(",");
+        Arrays.stream(urls).forEach(urlStr -> {
+            if(urlStr.startsWith("http")) {
+                try {
+                    URL url = new URL(urlStr);
+                    InetAddress address = InetAddress.getByName(url.getHost());
+                    String ip = address.getHostAddress();
+                    stringBuilder
+                            .append(url.getProtocol()).append("://")
+                            .append(ip).append(":")
+                            .append(url.getPort())
+                            .append(",");
+                } catch (UnknownHostException | MalformedURLException e) {
+                    throw new RuntimeException(e);
+                }
+            }else {
+                String[] split = urlStr.split(":");
+                try {
+                    stringBuilder.append(HttpUtils.getIpsFromDomainName(split[0])).append(":").append(split[1]).append(",");
+                } catch (UnknownHostException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
+
+        return stringBuilder.deleteCharAt(stringBuilder.length() - 1).toString();
     }
 }

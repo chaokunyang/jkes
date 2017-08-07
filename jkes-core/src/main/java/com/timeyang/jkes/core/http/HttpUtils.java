@@ -1,5 +1,7 @@
 package com.timeyang.jkes.core.http;
 
+import com.timeyang.jkes.core.util.Asserts;
+
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -10,7 +12,14 @@ import java.net.UnknownHostException;
  */
 public class HttpUtils {
 
-    public static String[] getIpsFormUrls(String... urls) throws MalformedURLException, UnknownHostException {
+    public static String parseIpFromUrl(String url) throws MalformedURLException, UnknownHostException {
+        Asserts.notBlank(url, "url can't be null");
+
+        InetAddress address = InetAddress.getByName(new URL(url).getHost());
+        return address.getHostAddress();
+    }
+
+    public static String[] getIpsFromUrls(String... urls) throws MalformedURLException, UnknownHostException {
         if(urls == null || urls.length == 0)
             return null;
 
@@ -25,7 +34,7 @@ public class HttpUtils {
         return ips;
     }
 
-    public static String getIpsFormDomainName(String domainName) throws UnknownHostException {
+    public static String getIpsFromDomainName(String domainName) throws UnknownHostException {
         String url = "http://" + domainName;
         try {
             InetAddress address = InetAddress.getByName(new URL(url).getHost());
@@ -35,7 +44,7 @@ public class HttpUtils {
         }
     }
 
-    public static String[] getIpsFormDomainNames(String... domainNames) throws UnknownHostException {
+    public static String[] getIpsFromDomainNames(String... domainNames) throws UnknownHostException {
         if(domainNames == null || domainNames.length == 0)
             return null;
 

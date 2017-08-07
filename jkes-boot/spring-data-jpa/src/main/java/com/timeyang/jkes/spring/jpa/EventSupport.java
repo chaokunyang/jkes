@@ -11,6 +11,8 @@ import com.timeyang.jkes.core.exception.ReflectiveInvocationTargetException;
 import com.timeyang.jkes.core.kafka.connect.KafkaConnectClient;
 import com.timeyang.jkes.core.kafka.producer.JkesKafkaProducer;
 import com.timeyang.jkes.core.kafka.util.KafkaConnectUtils;
+import com.timeyang.jkes.core.kafka.util.KafkaUtils;
+import com.timeyang.jkes.core.support.JkesProperties;
 import com.timeyang.jkes.core.util.Asserts;
 import com.timeyang.jkes.core.util.DocumentUtils;
 import com.timeyang.jkes.core.util.ReflectionUtils;
@@ -51,18 +53,22 @@ import java.util.Set;
 @Named
 public class EventSupport {
 
+    private final JkesProperties jkesProperties;
     private final JkesKafkaProducer jkesKafkaProducer;
     private final IndicesAdminClient indicesAdminClient;
     private final KafkaConnectClient kafkaConnectClient;
+    private final String deleteTopic;
 
     @PersistenceContext
     private EntityManager em;
 
     @Inject
-    public EventSupport(JkesKafkaProducer jkesKafkaProducer, IndicesAdminClient indicesAdminClient, KafkaConnectClient kafkaConnectClient) {
+    public EventSupport(JkesProperties jkesProperties, JkesKafkaProducer jkesKafkaProducer, IndicesAdminClient indicesAdminClient, KafkaConnectClient kafkaConnectClient) {
+        this.jkesProperties = jkesProperties;
         this.jkesKafkaProducer = jkesKafkaProducer;
         this.indicesAdminClient = indicesAdminClient;
         this.kafkaConnectClient = kafkaConnectClient;
+        this.deleteTopic = KafkaUtils.getDeleteTopic();
     }
 
     /**
@@ -150,7 +156,8 @@ public class EventSupport {
                 jkesKafkaProducer.send(saveEvent.getValue());
             }else if(event.getEventType() == Event.EventType.DELETE) {
                 Event.DeleteEvent deleteEvent = (Event.DeleteEvent) event;
-                jkesKafkaProducer.send("delete", "", deleteEvent);
+
+                jkesKafkaProducer.send(deleteTopic, "", deleteEvent);
             }else if(event.getEventType() == Event.EventType.DELETE_ALL) {
                 Event.DeleteAllEvent deleteAllEvent = (Event.DeleteAllEvent) event;
                 Class<?> domainClass = deleteAllEvent.getDomainClass();
