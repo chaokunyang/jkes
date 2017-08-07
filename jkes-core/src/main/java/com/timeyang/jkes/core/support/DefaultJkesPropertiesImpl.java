@@ -1,7 +1,7 @@
 package com.timeyang.jkes.core.support;
 
 /**
- * DefaultJkesPropertiesImpl, mostly used for test
+ * convenient default JkesProperties impl
  *
  * @author chaokunyang
  */
@@ -27,22 +27,8 @@ public class DefaultJkesPropertiesImpl implements JkesProperties {
     }
 
     @Override
-    public String getKafkaTopicPrefix() {
+    public String getClientId() {
         return null;
     }
 
-    @Override
-    public String getKafkaConnectorPrefix() {
-        return null;
-    }
-
-    @Override
-    public String getEsIndexPrefix() {
-        return null;
-    }
-
-    @Override
-    public String getEsAliasPrefix() {
-        return null;
-    }
 }

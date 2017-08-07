@@ -13,19 +13,13 @@ public interface JkesProperties {
 
     String getKafkaBootstrapServers();
 
-    String getKafkaTopicPrefix();
-
     String getKafkaConnectServers();
-
-    String getKafkaConnectorPrefix();
 
     String getEsBootstrapServers();
 
     String getDocumentBasePackage();
 
-    String getEsIndexPrefix();
-
-    String getEsAliasPrefix();
+    String getClientId();
 
     /**
      * if config is legal, return true, else throw IllegalConfigException
@@ -38,22 +32,15 @@ public interface JkesProperties {
             throw new IllegalConfigException("kafkaBootstrapServers must be configured");
         }
 
-        if(StringUtils.containsWhitespace(jkesProperties.getKafkaTopicPrefix())) {
-            throw new IllegalConfigException("kafkaTopicPrefix can't contain white space");
+        if(StringUtils.containsWhitespace(jkesProperties.getClientId())) {
+            throw new IllegalConfigException("clientId can't contain white space");
         }
-        if(!StringUtils.hasText(jkesProperties.getKafkaTopicPrefix())) {
-            throw new IllegalConfigException("kafkaTopicPrefix must be configured");
+        if(!StringUtils.hasText(jkesProperties.getClientId())) {
+            throw new IllegalConfigException("clientId must be configured");
         }
 
         if(!StringUtils.hasText(jkesProperties.getKafkaConnectServers())) {
             throw new IllegalConfigException("kafkaConnectServers must be configured");
-        }
-
-        if(StringUtils.containsWhitespace(jkesProperties.getKafkaConnectorPrefix())) {
-            throw new IllegalConfigException("kafkaConnectorPrefix can't contain white space");
-        }
-        if(!StringUtils.hasText(jkesProperties.getKafkaConnectorPrefix())) {
-            throw new IllegalConfigException("kafkaConnectorPrefix must be configured");
         }
 
         if(!StringUtils.hasText(jkesProperties.getEsBootstrapServers())) {
@@ -65,20 +52,6 @@ public interface JkesProperties {
         }
         if(!StringUtils.hasText(jkesProperties.getDocumentBasePackage())) {
             throw new IllegalConfigException("documentBasePackage must be configured");
-        }
-
-        if(StringUtils.containsWhitespace(jkesProperties.getEsIndexPrefix())) {
-            throw new IllegalConfigException("esIndexPrefix can't contain white space");
-        }
-        if(!StringUtils.hasText(jkesProperties.getEsIndexPrefix())) {
-            throw new IllegalConfigException("esIndexPrefix must be configured");
-        }
-
-        if(StringUtils.containsWhitespace(jkesProperties.getEsAliasPrefix())) {
-            throw new IllegalConfigException("esAliasPrefix can't contain white space");
-        }
-        if(!StringUtils.hasText(jkesProperties.getEsAliasPrefix())) {
-            throw new IllegalConfigException("esAliasPrefix must be configured");
         }
 
         return true;

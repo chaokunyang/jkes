@@ -2,7 +2,7 @@ package com.timeyang.jkes.integration_test.config;
 
 import com.timeyang.jkes.core.http.HttpUtils;
 import com.timeyang.jkes.core.support.Config;
-import com.timeyang.jkes.core.support.JkesProperties;
+import com.timeyang.jkes.core.support.DefaultJkesPropertiesImpl;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,7 +18,7 @@ import java.util.Arrays;
  */
 @Configuration
 @PropertySource("classpath:jkes.properties")
-public class JkesConf implements JkesProperties {
+public class JkesConf extends DefaultJkesPropertiesImpl {
 
     @Bean
     public static PropertySourcesPlaceholderConfigurer
@@ -35,12 +35,6 @@ public class JkesConf implements JkesProperties {
     @Value("${kafka.bootstrap.servers}")
     private String kafkaBootstrapServers;
 
-    @Value("${kafka.topic.prefix}")
-    private String kafkaTopicPrefix;
-
-    @Value("${kafka.connector.prefix}")
-    private String kafkaConnectorPrefix;
-
     @Value("${kafka.connect.servers}")
     private String kafkaConnectServers;
 
@@ -50,11 +44,8 @@ public class JkesConf implements JkesProperties {
     @Value("${document.base_package}")
     private String documentBasePackage;
 
-    @Value("${es.index.prefix}")
-    private String esIndexPrefix;
-
-    @Value("${es.alias.prefix}")
-    private String esAliasPrefix;
+    @Value("${jkes.client.id}")
+    private String clientId;
 
     @Override
     public String getKafkaBootstrapServers() {
@@ -73,16 +64,6 @@ public class JkesConf implements JkesProperties {
     }
 
     @Override
-    public String getKafkaTopicPrefix() {
-        return kafkaTopicPrefix;
-    }
-
-    @Override
-    public String getKafkaConnectorPrefix() {
-        return kafkaConnectorPrefix;
-    }
-
-    @Override
     public String getKafkaConnectServers() {
         return kafkaConnectServers;
     }
@@ -98,25 +79,12 @@ public class JkesConf implements JkesProperties {
     }
 
     @Override
-    public String getEsIndexPrefix() {
-        return esIndexPrefix;
-    }
-
-    @Override
-    public String getEsAliasPrefix() {
-        return esAliasPrefix;
+    public String getClientId() {
+        return clientId;
     }
 
     public void setKafkaBootstrapServers(String kafkaBootstrapServers) {
         this.kafkaBootstrapServers = kafkaBootstrapServers;
-    }
-
-    public void setKafkaTopicPrefix(String kafkaTopicPrefix) {
-        this.kafkaTopicPrefix = kafkaTopicPrefix;
-    }
-
-    public void setKafkaConnectorPrefix(String kafkaConnectorPrefix) {
-        this.kafkaConnectorPrefix = kafkaConnectorPrefix;
     }
 
     public void setKafkaConnectServers(String kafkaConnectServers) {
@@ -131,13 +99,7 @@ public class JkesConf implements JkesProperties {
         this.documentBasePackage = documentBasePackage;
     }
 
-    public void setEsIndexPrefix(String esIndexPrefix) {
-        this.esIndexPrefix = esIndexPrefix;
+    public void setClientId(String clientId) {
+        this.clientId = clientId;
     }
-
-    public void setEsAliasPrefix(String esAliasPrefix) {
-        this.esAliasPrefix = esAliasPrefix;
-    }
-
-
 }

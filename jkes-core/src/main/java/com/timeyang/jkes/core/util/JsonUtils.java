@@ -39,4 +39,12 @@ public class JsonUtils {
     public static JSONObject readValue(InputStream inputStream) throws IOException {
         return mapper.readValue(inputStream, JSONObject.class);
     }
+
+    public static <T> T parseJsonToObject(String json, Class<T> clazz) {
+        try {
+            return mapper.readValue(json, clazz);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

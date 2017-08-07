@@ -4,7 +4,7 @@ import com.timeyang.jkes.core.exception.JkesException;
 import com.timeyang.jkes.core.kafka.connect.KafkaConnectClient;
 import com.timeyang.jkes.core.kafka.producer.JkesKafkaProducer;
 import com.timeyang.jkes.core.kafka.producer.Topics;
-import com.timeyang.jkes.core.kafka.util.EsKafkaUtils;
+import com.timeyang.jkes.core.kafka.util.KafkaUtils;
 import com.timeyang.jkes.integration_test.domain.PersonGroup;
 import com.timeyang.jkes.integration_test.repository.PersonGroupRepository;
 import com.timeyang.jkes.spring.jpa.ConcurrentIndexer;
@@ -97,7 +97,7 @@ public class ApplicationTest {
                     Pageable pageable = new PageRequest(p, pageSize);
                     Page<PersonGroup> pageResult = personGroupRepository.findAll(pageable);
 
-                    String topic = EsKafkaUtils.getTopic(PersonGroup.class);
+                    String topic = KafkaUtils.getTopic(PersonGroup.class);
                     if(Topics.contains(topic)) {
                         jkesKafkaProducer.send(pageResult);
                     }else {
@@ -169,7 +169,7 @@ public class ApplicationTest {
         int sizePerThread = 2_000;
 
         for(int i = 0; i < nThreads; i++) {
-            String topic = EsKafkaUtils.getTopic(PersonGroup.class);
+            String topic = KafkaUtils.getTopic(PersonGroup.class);
             for(int j = 0; j < sizePerThread; j++) {
                 PersonGroup personGroup = generatePersonGroup(j);
                 long id = (long)(i * sizePerThread + j);

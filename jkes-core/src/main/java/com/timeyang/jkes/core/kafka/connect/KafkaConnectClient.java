@@ -1,16 +1,19 @@
 package com.timeyang.jkes.core.kafka.connect;
 
+import com.timeyang.jkes.DocumentMetadata;
 import com.timeyang.jkes.core.annotation.Document;
 import com.timeyang.jkes.core.http.HttpClient;
-import com.timeyang.jkes.core.kafka.util.EsKafkaUtils;
-import com.timeyang.jkes.core.support.JkesProperties;
-import com.timeyang.jkes.core.util.Asserts;
 import com.timeyang.jkes.core.http.Response;
 import com.timeyang.jkes.core.kafka.exception.KafkaConnectRequestException;
-import com.timeyang.jkes.core.kafka.util.EsKafkaConnectUtils;
+import com.timeyang.jkes.core.kafka.util.KafkaConnectUtils;
+import com.timeyang.jkes.core.kafka.util.KafkaUtils;
+import com.timeyang.jkes.core.support.JkesProperties;
+import com.timeyang.jkes.core.util.Asserts;
 import com.timeyang.jkes.core.util.DocumentUtils;
+import com.timeyang.jkes.core.util.JsonUtils;
 import org.json.JSONObject;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.io.IOException;
@@ -31,14 +34,39 @@ public class KafkaConnectClient {
 
     private static final HttpClient HTTP_CLIENT = HttpClient.getInstance();
 
+    private final DocumentMetadata documentMetadata;
     private final String[] urls;
 
     // locks for connectors
-    private ConcurrentMap<String, Lock> locks = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, Lock> locks = new ConcurrentHashMap<>();
 
     @Inject
-    public KafkaConnectClient(JkesProperties jkesProperties) {
+    public KafkaConnectClient(JkesProperties jkesProperties, DocumentMetadata documentMetadata) {
         this.urls = jkesProperties.getKafkaConnectServers().split("\\s*,");
+        this.documentMetadata = documentMetadata;
+    }
+
+    @PostConstruct
+    public void init() {
+        documentMetadata.getAnnotatedClasses().forEach(clazz -> {
+            String connectorName = KafkaConnectUtils.getConnectorName(clazz);
+            if(checkConnectorExists(connectorName)) {
+                updateEsSinkConnector(clazz);
+            }else {
+                createEsSinkConnector(clazz);
+            }
+        });
+    }
+
+    public JSONObject getConnectConfig(String connectorName) {
+        try {
+            Response response = HTTP_CLIENT.get(getRandomUrl(), String.format("connectors/%s/config", connectorName));
+            if(response.getStatusCode() / 100 != 2) return null;
+
+            return JsonUtils.parseJsonToObject(response.getContent(), JSONObject.class);
+        } catch (IOException e) {
+            throw new KafkaConnectRequestException("Failed get connector[" + connectorName + "] config", e);
+        }
     }
 
     /**
@@ -50,7 +78,7 @@ public class KafkaConnectClient {
     public void createEsSinkConnector(Class<?> document) {
         Asserts.check(document.isAnnotationPresent(Document.class), document + " must be annotated with " + Document.class + " to create kafka connector");
 
-        String connectorName = EsKafkaConnectUtils.getConnectorName(document);
+        String connectorName = KafkaConnectUtils.getConnectorName(document);
 
         if(checkConnectorExists(connectorName))
             throw new IllegalArgumentException("The specified class " + document + " already have a corresponding connector[" + connectorName + "]");
@@ -59,7 +87,7 @@ public class KafkaConnectClient {
         payload.put("name", connectorName);
 
         JSONObject config = ConnectorConfigTemplates.getEsSinkConfigTemplate();
-        String topic = EsKafkaUtils.getTopic(document);
+        String topic = KafkaUtils.getTopic(document);
         config.put("topics", topic);
         config.put("type.name", DocumentUtils.getTypeName(document));
         config.put("topic.index.map", getTopicIndexMap(topic, document));
@@ -85,7 +113,7 @@ public class KafkaConnectClient {
 
     public boolean createEsSinkConnectorIfAbsent(Class<?> document) {
         Asserts.check(document.isAnnotationPresent(Document.class), document + " must be annotated with " + Document.class + " to create kafka connector");
-        String connectorName = EsKafkaConnectUtils.getConnectorName(document);
+        String connectorName = KafkaConnectUtils.getConnectorName(document);
 
         locks.putIfAbsent(connectorName, new ReentrantLock());
         try {
@@ -99,6 +127,31 @@ public class KafkaConnectClient {
         }
 
         return false;
+    }
+
+    public void updateEsSinkConnector(Class<?> document) {
+        Asserts.check(document.isAnnotationPresent(Document.class), document + " must be annotated with " + Document.class + " to update kafka connector");
+
+        String connectorName = KafkaConnectUtils.getConnectorName(document);
+
+        JSONObject config = ConnectorConfigTemplates.getEsSinkConfigTemplate();
+        String topic = KafkaUtils.getTopic(document);
+        config.put("topics", topic);
+        config.put("type.name", DocumentUtils.getTypeName(document));
+        config.put("topic.index.map", getTopicIndexMap(topic, document));
+
+        try {
+            locks.putIfAbsent(connectorName, new ReentrantLock());
+            try {
+                locks.get(connectorName).lock();
+                HTTP_CLIENT.put(getRandomUrl(), String.format("connectors/%s/config", connectorName), config);
+            }finally {
+                locks.get(connectorName).unlock();
+            }
+
+        } catch (IOException e) {
+            throw new KafkaConnectRequestException(e);
+        }
     }
 
     /**

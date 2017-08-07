@@ -1,9 +1,8 @@
 package com.timeyang.jkes.core.elasticsearch.indices;
 
-import com.timeyang.jkes.core.annotation.Document;
+import com.timeyang.jkes.DocumentMetadata;
 import com.timeyang.jkes.core.elasticsearch.EsRestClient;
 import com.timeyang.jkes.core.support.JkesProperties;
-import com.timeyang.jkes.core.util.ClassUtils;
 import com.timeyang.jkes.core.util.DocumentUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -35,20 +34,22 @@ public class IndicesAdminClient {
     private ConcurrentMap<String, Lock> locks = new ConcurrentHashMap<>();
 
     private final JkesProperties jkesProperties;
-    private EsRestClient esRestClient;
+    private final DocumentMetadata documentMetadata;
+    private final EsRestClient esRestClient;
     private IndicesBuilder indicesBuilder = IndicesBuilder.getInstance();
 
     @Inject
-    public IndicesAdminClient(EsRestClient esRestClient, JkesProperties jkesProperties) {
+    public IndicesAdminClient(EsRestClient esRestClient, JkesProperties jkesProperties, DocumentMetadata documentMetadata) {
         this.esRestClient = esRestClient;
         this.jkesProperties = jkesProperties;
+        this.documentMetadata = documentMetadata;
     }
 
     @PostConstruct
     public void init() {
         logger.info("search init begin");
 
-        Set<Class<?>> annotatedClasses = ClassUtils.getAnnotatedClasses(jkesProperties.getDocumentBasePackage(), Document.class);
+        Set<Class<?>> annotatedClasses = documentMetadata.getAnnotatedClasses();
 
         check(annotatedClasses);
 

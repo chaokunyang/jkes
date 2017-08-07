@@ -1,7 +1,7 @@
 package com.timeyang.jkes.core.kafka.producer;
 
 import com.timeyang.jkes.core.kafka.serialize.json.JkesKafkaJsonSerializer;
-import com.timeyang.jkes.core.kafka.util.EsKafkaUtils;
+import com.timeyang.jkes.core.kafka.util.KafkaUtils;
 import com.timeyang.jkes.core.support.JkesProperties;
 import org.apache.kafka.clients.producer.*;
 
@@ -43,14 +43,14 @@ public class JkesKafkaProducer {
     }
 
     public void send(Object value) {
-        String topic = EsKafkaUtils.getTopic(value);
-        String key = EsKafkaUtils.getKey(value);
+        String topic = KafkaUtils.getTopic(value);
+        String key = KafkaUtils.getKey(value);
         send(topic, key, value);
     }
 
     public Future<RecordMetadata> send(Object value, Callback callback) {
-        String topic = EsKafkaUtils.getTopic(value);
-        String key = EsKafkaUtils.getKey(value);
+        String topic = KafkaUtils.getTopic(value);
+        String key = KafkaUtils.getKey(value);
         return producer.send(new ProducerRecord<>(topic, key, value), callback);
     }
 

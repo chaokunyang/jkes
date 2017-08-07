@@ -1,24 +1,21 @@
 package com.timeyang.jkes.spring.jpa;
 
-import com.timeyang.jkes.spring.jpa.exception.UnsupportedEventPublishException;
-import com.timeyang.jkes.spring.jpa.util.SimpleAopUtil;
-import com.timeyang.jkes.core.util.Asserts;
-import com.timeyang.jkes.core.util.DocumentUtils;
-import com.timeyang.jkes.core.util.ReflectionUtils;
 import com.timeyang.jkes.core.annotation.Document;
 import com.timeyang.jkes.core.elasticsearch.indices.IndicesAdminClient;
 import com.timeyang.jkes.core.event.Event;
 import com.timeyang.jkes.core.event.EventContainer;
 import com.timeyang.jkes.core.exception.EventPublishException;
 import com.timeyang.jkes.core.exception.IllegalMemberAccessException;
-import com.timeyang.jkes.core.exception.ReflectiveInvocationTargetException;
 import com.timeyang.jkes.core.exception.JkesException;
+import com.timeyang.jkes.core.exception.ReflectiveInvocationTargetException;
 import com.timeyang.jkes.core.kafka.connect.KafkaConnectClient;
 import com.timeyang.jkes.core.kafka.producer.JkesKafkaProducer;
-import com.timeyang.jkes.core.kafka.producer.Topics;
-import com.timeyang.jkes.core.kafka.util.EsKafkaConnectUtils;
-import com.timeyang.jkes.core.kafka.util.EsKafkaUtils;
-import org.apache.kafka.clients.producer.RecordMetadata;
+import com.timeyang.jkes.core.kafka.util.KafkaConnectUtils;
+import com.timeyang.jkes.core.util.Asserts;
+import com.timeyang.jkes.core.util.DocumentUtils;
+import com.timeyang.jkes.core.util.ReflectionUtils;
+import com.timeyang.jkes.spring.jpa.exception.UnsupportedEventPublishException;
+import com.timeyang.jkes.spring.jpa.util.SimpleAopUtil;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.springframework.data.jpa.repository.support.JpaEntityInformation;
 import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
@@ -26,15 +23,24 @@ import org.springframework.data.repository.CrudRepository;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.EntityManager;
+import javax.persistence.Id;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.PersistenceContext;
 import java.io.Serializable;
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Event Support
@@ -141,25 +147,7 @@ public class EventSupport {
         for (Event event : events) {
             if(event.getEventType() == Event.EventType.SAVE) {
                 Event.SaveEvent saveEvent = (Event.SaveEvent) event;
-
-                Class<?> domainClass = saveEvent.getValue().getClass();
-                String topic = EsKafkaUtils.getTopic(domainClass);
-                if(Topics.contains(topic)) {
-                    jkesKafkaProducer.send(saveEvent.getValue());
-                }else {
-                    Future<RecordMetadata> future = jkesKafkaProducer.send(saveEvent.getValue(),
-                            (metadata, exception) -> {
-                                kafkaConnectClient.createEsSinkConnectorIfAbsent(domainClass);
-                                Topics.add(topic);
-                            });
-                    try {
-                        future.get(); // make the callback block, to ensure esSinkConnector exists
-                    } catch (InterruptedException | ExecutionException e) {
-                        throw new JkesException(e);
-                    }
-
-                }
-
+                jkesKafkaProducer.send(saveEvent.getValue());
             }else if(event.getEventType() == Event.EventType.DELETE) {
                 Event.DeleteEvent deleteEvent = (Event.DeleteEvent) event;
                 jkesKafkaProducer.send("delete", "", deleteEvent);
@@ -174,7 +162,7 @@ public class EventSupport {
                 indicesAdminClient.createIndex(domainClass);
 
                 // restart connector
-                String connectorName = EsKafkaConnectUtils.getConnectorName(domainClass);
+                String connectorName = KafkaConnectUtils.getConnectorName(domainClass);
                 kafkaConnectClient.restartConnector(connectorName);
             }
         }

@@ -1,12 +1,7 @@
 package com.timeyang.jkes.spring.jpa;
 
-import com.timeyang.jkes.core.exception.JkesException;
-import com.timeyang.jkes.core.kafka.connect.KafkaConnectClient;
 import com.timeyang.jkes.core.kafka.producer.JkesKafkaProducer;
-import com.timeyang.jkes.core.kafka.producer.Topics;
-import com.timeyang.jkes.core.kafka.util.EsKafkaUtils;
 import com.timeyang.jkes.core.util.DocumentUtils;
-import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.log4j.Logger;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -15,10 +10,11 @@ import org.springframework.data.domain.Pageable;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 import javax.inject.Named;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Currently Jkes use a ThreadPool to schedule, I will use ForkJoin to schedule, ForkJoin can increase performance.
@@ -31,8 +27,6 @@ public class ConcurrentIndexer {
     private static final Logger LOGGER = Logger.getLogger(ConcurrentIndexer.class);
 
     private final JkesKafkaProducer jkesKafkaProducer;
-    private final KafkaConnectClient kafkaConnectClient;
-
     private LinkedList<IndexTask<?>> tasks;
     private int pageSize = 200;
 
@@ -40,11 +34,9 @@ public class ConcurrentIndexer {
     private ExecutorService exec;
 
     @Inject
-    public ConcurrentIndexer(JkesKafkaProducer jkesKafkaProducer, KafkaConnectClient kafkaConnectClient) {
+    public ConcurrentIndexer(JkesKafkaProducer jkesKafkaProducer) {
         this.tasks = new LinkedList<>();
         this.jkesKafkaProducer = jkesKafkaProducer;
-        this.kafkaConnectClient = kafkaConnectClient;
-
         this.exec = Executors.newFixedThreadPool(nThreads);
     }
 
@@ -89,28 +81,7 @@ public class ConcurrentIndexer {
     private void sendData(Page<?> page) {
         List<?> content = page.getContent();
         if(content.size() != 0) {
-            Class<?> domainClass = content.get(0).getClass();
-
-            String topic = EsKafkaUtils.getTopic(domainClass);
-            if(Topics.contains(topic)) {
-                jkesKafkaProducer.send(content);
-            }else {
-                Iterator<?> iterator = content.iterator();
-                if (iterator.hasNext()) {
-                    Future<RecordMetadata> future = jkesKafkaProducer.send(iterator.next(),
-                            (metadata, exception) -> {
-                                kafkaConnectClient.createEsSinkConnectorIfAbsent(domainClass);
-                                Topics.add(topic);
-                            });
-                    try {
-                        future.get(); // make the callback block, to ensure esSinkConnector exists
-                    } catch (InterruptedException | ExecutionException e) {
-                        throw new JkesException(e);
-                    }
-                }
-
-                iterator.forEachRemaining(jkesKafkaProducer::send);
-            }
+            jkesKafkaProducer.send(content);
         }
     }
 

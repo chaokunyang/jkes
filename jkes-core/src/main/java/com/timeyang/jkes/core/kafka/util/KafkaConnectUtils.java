@@ -10,14 +10,14 @@ import com.timeyang.jkes.core.util.StringUtils;
  *
  * @author chaokunyang
  */
-public class EsKafkaConnectUtils {
+public class KafkaConnectUtils {
 
     public static String getConnectorName(Class<?> document) {
         Asserts.check(document.isAnnotationPresent(Document.class), "The class " + document.getCanonicalName() + " must be annotated with " + Document.class.getCanonicalName());
 
-        String prefix = Config.getJkesProperties().getKafkaConnectorPrefix();
+        String prefix = Config.getJkesProperties().getClientId();
         prefix = StringUtils.hasText(prefix) ? StringUtils.trimWhitespace(prefix) : "";
-        String connectorName = prefix + "_" + EsKafkaUtils.getTopicWithoutPrefix(document) + "_es_sink";
+        String connectorName = prefix + "_" + KafkaUtils.getTopicWithoutPrefix(document) + "_es_sink";
         return connectorName;
     }
 

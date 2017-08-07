@@ -1,6 +1,7 @@
 package com.timeyang.jkes.core.kafka.connect;
 
-import com.timeyang.jkes.core.kafka.util.EsKafkaConnectUtils;
+import com.timeyang.jkes.DocumentMetadata;
+import com.timeyang.jkes.core.kafka.util.KafkaConnectUtils;
 import com.timeyang.jkes.core.support.Config;
 import com.timeyang.jkes.core.support.DefaultJkesPropertiesImpl;
 import com.timeyang.jkes.core.support.JkesProperties;
@@ -24,8 +25,8 @@ public class KafkaConnectClientTest {
         };
         Config.setJkesProperties(jkesProperties);
 
-        KafkaConnectClient kafkaConnectClient = new KafkaConnectClient(jkesProperties);
-        String connectorName = EsKafkaConnectUtils.getConnectorName(Person.class);
+        KafkaConnectClient kafkaConnectClient = new KafkaConnectClient(jkesProperties, new DocumentMetadata(jkesProperties));
+        String connectorName = KafkaConnectUtils.getConnectorName(Person.class);
         if(!kafkaConnectClient.checkConnectorExists(connectorName))
             kafkaConnectClient.createEsSinkConnector(Person.class);
     }
@@ -40,8 +41,8 @@ public class KafkaConnectClientTest {
         };
         Config.setJkesProperties(jkesProperties);
 
-        String connectorName = EsKafkaConnectUtils.getConnectorName(Person.class);
-        new KafkaConnectClient(jkesProperties).deleteConnector(connectorName);
+        String connectorName = KafkaConnectUtils.getConnectorName(Person.class);
+        new KafkaConnectClient(jkesProperties, new DocumentMetadata(jkesProperties)).deleteConnector(connectorName);
     }
 
     @Test
@@ -54,8 +55,8 @@ public class KafkaConnectClientTest {
         };
         Config.setJkesProperties(jkesProperties);
 
-        String connectorName = EsKafkaConnectUtils.getConnectorName(Person.class);
-        System.out.println(new KafkaConnectClient(jkesProperties).checkConnectorExists(connectorName));
+        String connectorName = KafkaConnectUtils.getConnectorName(Person.class);
+        System.out.println(new KafkaConnectClient(jkesProperties, new DocumentMetadata(jkesProperties)).checkConnectorExists(connectorName));
     }
 
 }

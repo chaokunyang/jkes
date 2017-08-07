@@ -23,7 +23,7 @@ public class DocumentUtils {
         if(!StringUtils.hasText(indexName))
             indexName = StringUtils.addUnderscores(clazz.getSimpleName());
 
-        String prefix = Config.getJkesProperties().getEsIndexPrefix();
+        String prefix = Config.getJkesProperties().getClientId();
         if(StringUtils.hasText(prefix)) {
             return prefix + "_" + indexName;
         }
@@ -46,7 +46,7 @@ public class DocumentUtils {
         if(!StringUtils.hasText(alias))
             alias = StringUtils.addUnderscores(clazz.getSimpleName()) + "_alias";
 
-        String prefix = Config.getJkesProperties().getEsIndexPrefix();
+        String prefix = Config.getJkesProperties().getClientId();
         if(StringUtils.hasText(prefix)) {
             return prefix + "_" + alias;
         }

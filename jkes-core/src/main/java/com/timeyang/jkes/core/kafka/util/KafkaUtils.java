@@ -16,7 +16,7 @@ import java.lang.reflect.Method;
 /**
  * @author chaokunyang
  */
-public class EsKafkaUtils {
+public class KafkaUtils {
 
     public static String getTopicWithoutPrefix(Object entity) {
         Class<?> clazz = entity.getClass();
@@ -48,7 +48,7 @@ public class EsKafkaUtils {
     public static String getTopic(Class<?> clazz) {
         String topic = getTopicWithoutPrefix(clazz);
 
-        String prefix = Config.getJkesProperties().getKafkaTopicPrefix();
+        String prefix = Config.getJkesProperties().getClientId();
         if(StringUtils.hasText(prefix)) {
             return prefix + "_" + topic;
         }
