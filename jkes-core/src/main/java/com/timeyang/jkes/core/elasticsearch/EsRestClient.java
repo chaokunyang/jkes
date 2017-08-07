@@ -103,7 +103,10 @@ public class EsRestClient {
             HttpEntity payload = new NStringEntity(JsonUtils.convertToString(entity), ContentType.APPLICATION_JSON);
             return restClient.performRequest(method, endpoint, params, payload, HttpAsyncResponseConsumerFactory.DEFAULT, headers);
         } catch (IOException e) {
-            throw new RequestException(e);
+            throw new RequestException(
+                    String.format("request exception. method: %s, endpoint: %s, params: %s, entity: %s",
+                            method, endpoint, params, entity),
+                    e);
         }
     }
 
