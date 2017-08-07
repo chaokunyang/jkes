@@ -10,7 +10,7 @@
         <version>1.0.0</version>
     </parent>
 
-    <artifactId>kafka-connect-jkes-delete</artifactId>
+    <artifactId>jkes-delete-connector</artifactId>
     <version>1.0.0</version>
 
     <properties>

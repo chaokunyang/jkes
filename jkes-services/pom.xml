@@ -16,7 +16,7 @@
     <modules>
         <module>jkes-manager-app</module>
         <module>jkes-delete-service</module>
-        <module>jkes-connector-delete</module>
+        <module>jkes-delete-connector</module>
         <module>jkes-search-service</module>
     </modules>
 
