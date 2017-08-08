@@ -19,7 +19,10 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -62,7 +65,7 @@ public class ConcurrentIndexer implements Indexer {
     }
 
     @PostConstruct
-    public void registerAllTasks() {
+    public void init() {
         Set<Class<?>> documentClasses = documentMetadata.getAnnotatedDocumentClasses();
         documentClasses.forEach(clazz -> {
             PagingAndSortingRepository repository = getRepositoryBean(clazz);
@@ -82,30 +85,53 @@ public class ConcurrentIndexer implements Indexer {
                     return repository.findAll(pageable);
                 }
             });
+
+            this.progress.put(clazz.getCanonicalName(), new IndexProgress(clazz, repository.count(), (long) 0));
         });
     }
 
+    @Override
     public ConcurrentIndexer startAll() {
         logger.info("Start querying data from database and indexing");
-        tasksMap.values().forEach(task -> this.inFlightTasksMap.put(task.getEntityClass().getCanonicalName(), submit(task)));
+        tasksMap.values().forEach(task -> {
+            Future<?> submit = submit(task);
+            this.inFlightTasksMap.put(task.getEntityClass().getCanonicalName(), submit);
+        });
 
         return this;
     }
 
+    @Override
     public void start(String entityClassName) {
         synchronized (this) {
             IndexTask<?> task = this.tasksMap.get(entityClassName);
 
             Future<?> future = this.inFlightTasksMap.get(entityClassName);
-            if(!future.isDone()) {
+            if(future != null && !future.isDone()) {
                 boolean cancel = future.cancel(true);
                 if(cancel)
                     logger.info("Canceled task: " + task);
             }
 
-            this.inFlightTasksMap.put(task.getEntityClass().getCanonicalName(), submit(task));
+            Future<?> submit = submit(task);
+            this.inFlightTasksMap.put(task.getEntityClass().getCanonicalName(), submit);
             logger.debug("added task: " + task);
         }
+    }
+
+    @Override
+    public boolean stop(String entityClassName) {
+        Future<?> future = this.inFlightTasksMap.get(entityClassName);
+        return future != null && future.cancel(true);
+    }
+
+    @Override
+    public Map<String, Boolean> stopAll() {
+        Map<String, Boolean> result = new HashMap<>();
+        this.inFlightTasksMap.forEach((k, v) -> {
+            result.put(k, v.cancel(true));
+        });
+        return result;
     }
 
     private Future<?> submit(IndexTask<?> task) {
@@ -115,7 +141,7 @@ public class ConcurrentIndexer implements Indexer {
             logger.info("Start full indexing for class[" + entityClass + ", the corresponding index is " + index);
 
             long count = task.count();
-            this.progress.putIfAbsent(entityClass.getCanonicalName(), new IndexProgress(entityClass, count, 0L));
+            this.progress.put(entityClass.getCanonicalName(), new IndexProgress(entityClass, count, 0L));
 
             int pageCount = (int) (count / pageSize);
             if (count % pageSize != 0)
@@ -137,10 +163,12 @@ public class ConcurrentIndexer implements Indexer {
     }
 
     @PreDestroy
+    @Override
     public void shutdown() throws InterruptedException {
         awaitTermination(30, TimeUnit.SECONDS);
     }
 
+    @Override
     public void awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
         this.exec.shutdown();
         this.exec.awaitTermination(timeout, unit);
@@ -154,9 +182,15 @@ public class ConcurrentIndexer implements Indexer {
         return content.size();
     }
 
+    @Override
     public void addTask(IndexTask<?> task) {
         tasksMap.put(task.getEntityClass().getCanonicalName(), task);
         logger.debug("added task: " + task);
+    }
+
+    @Override
+    public Map<String, IndexProgress> getProgress() {
+        return Collections.unmodifiableMap(this.progress);
     }
 
     private PagingAndSortingRepository getRepositoryBean(Class<?> entityClass) {

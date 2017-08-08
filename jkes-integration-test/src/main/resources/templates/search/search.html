@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="author" content="chaokunyang"/>
+
+    <title>Jkes Integration test search admin</title>
+
+    <link rel="stylesheet" href="../../static/assets/lib/font-awesome-4.7.0/css/font-awesome.min.css" th:href="@{/assets/lib/font-awesome-4.7.0/css/font-awesome.min.css}" />
+    <link rel="stylesheet" href="../../static/assets/lib/bootstrap-3.3.7-dist/css/bootstrap.min.css" th:href="@{/assets/lib/bootstrap-3.3.7-dist/css/bootstrap.min.css}" />
+    <link rel="stylesheet" href="../../static/assets/lib/highlight/atom-one-light.css" th:href="@{/assets/lib/highlight/atom-one-light.css}" />
+
+    <link href="../../static/assets/css/page.css" th:href="@{/assets/css/page.css}" rel="stylesheet"/>
+    <link href="../../static/assets/css/search.css" th:href="@{/assets/css/search.css}" rel="stylesheet"/>
+
+</head>
+<body ng-app="search">
+
+<div th:replace="fragments/header :: header">header</div>
+
+<div class="content container api" ng-controller="Admin">
+    <div class="general_options">
+        <button class="btn btn-primary" ng-click="start_all()">start all</button>
+        <button class="btn btn-danger" ng-click="stop_all()">stop all</button>
+    </div>
+    <table class="table table-bordered table-striped table-hover">
+        <thead>
+        <tr>
+            <th>entityName</th>
+            <th>total</th>
+            <th>indexed</th>
+            <th>percent</th>
+            <th>options</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr ng-repeat="entry in progress">
+            <td>{{ entry.clazz }}</td>
+            <td>{{ entry.total }}</td>
+            <td>{{ entry.indexed }}</td>
+            <td>{{ entry.percent + '%' }}</td>
+            <td>
+                <button class="btn btn-info" ng-click="start(entry.clazz)">Start</button>
+                <button class="btn btn-warning" ng-click="stop(entry.clazz)">Stop</button>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<div th:replace="fragments/footer :: footer">footer</div>
+
+<script th:src="@{/assets/lib/jquery/jquery-3.2.1.min.js}" src="../../static/assets/lib/jquery/jquery-3.2.1.min.js"></script>
+<script th:src="@{/assets/lib/bootstrap-3.3.7-dist/js/bootstrap.min.js}" src="../../static/assets/lib/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
+<script th:src="@{/assets/lib/highlight/highlight.pack.js}" src="../../static/assets/lib/highlight/highlight.pack.js"></script>
+<script th:src="@{/assets/lib/angular/angular.min.js}" src="../../static/assets/lib/angular/angular.min.js"></script>
+<script th:src="@{/assets/js/search.js}" src="../../static/assets/js/search.js"></script>
+</body>
+</html>
