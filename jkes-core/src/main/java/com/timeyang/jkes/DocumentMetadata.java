@@ -23,7 +23,7 @@ public class DocumentMetadata {
      * Get set of class annotated with {@link Document}
      * @return
      */
-    public Set<Class<?>> getAnnotatedClasses() {
+    public Set<Class<?>> getAnnotatedDocumentClasses() {
         return annotatedClasses;
     }
 }

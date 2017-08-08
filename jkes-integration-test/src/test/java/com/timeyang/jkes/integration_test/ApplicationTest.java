@@ -5,7 +5,7 @@ import com.timeyang.jkes.core.kafka.producer.JkesKafkaProducer;
 import com.timeyang.jkes.core.kafka.util.KafkaUtils;
 import com.timeyang.jkes.integration_test.domain.PersonGroup;
 import com.timeyang.jkes.integration_test.repository.PersonGroupRepository;
-import com.timeyang.jkes.spring.jpa.ConcurrentIndexer;
+import com.timeyang.jkes.spring.jpa.index.ConcurrentIndexer;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,7 +41,7 @@ public class ApplicationTest {
 
     @Test
     public void test() {
-        addData();
+        // addData();
         // queryAndSendData();
         queryAndSend();
         sendData();
@@ -115,22 +115,22 @@ public class ApplicationTest {
     }
 
     public void queryAndSend() {
-        concurrentIndexer.addTask(new ConcurrentIndexer.IndexTask<PersonGroup>() {
-            @Override
-            public Class<PersonGroup> getEntityClass() {
-                return PersonGroup.class;
-            }
-
-            @Override
-            public long count() {
-                return personGroupRepository.count();
-            }
-
-            @Override
-            public Page<PersonGroup> getData(Pageable pageable) {
-                return personGroupRepository.findAll(pageable);
-            }
-        });
+        // concurrentIndexer.addTask(new IndexTask<PersonGroup>() {
+        //     @Override
+        //     public Class<PersonGroup> getEntityClass() {
+        //         return PersonGroup.class;
+        //     }
+        //
+        //     @Override
+        //     public long count() {
+        //         return personGroupRepository.count();
+        //     }
+        //
+        //     @Override
+        //     public Page<PersonGroup> getData(Pageable pageable) {
+        //         return personGroupRepository.findAll(pageable);
+        //     }
+        // });
 
         concurrentIndexer.startAll();
         try {

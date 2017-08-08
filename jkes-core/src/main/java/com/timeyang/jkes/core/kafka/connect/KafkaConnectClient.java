@@ -52,7 +52,7 @@ public class KafkaConnectClient {
 
     @PostConstruct
     public void init() {
-        documentMetadata.getAnnotatedClasses().forEach(clazz -> {
+        documentMetadata.getAnnotatedDocumentClasses().forEach(clazz -> {
             String connectorName = KafkaConnectUtils.getConnectorName(clazz);
             if(checkConnectorExists(connectorName)) {
                 updateIndexSinkConnector(clazz);

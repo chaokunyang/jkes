@@ -13,12 +13,12 @@ public class IndexProgress {
     private final Class<?> clazz;
     private final Long total;
     private final Long indexed;
-    private final double rate;
+    private final float percent;
 
     public IndexProgress(Class<?> clazz, Long total, Long indexed) {
         this.clazz = clazz;
         this.total = total;
         this.indexed = indexed;
-        this.rate = (double)indexed / (double)total;
+        this.percent = indexed * 100.0f / total;
     }
 }

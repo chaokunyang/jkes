@@ -49,7 +49,7 @@ public class IndicesAdminClient {
     public void init() {
         logger.info("search init begin");
 
-        Set<Class<?>> annotatedClasses = documentMetadata.getAnnotatedClasses();
+        Set<Class<?>> annotatedClasses = documentMetadata.getAnnotatedDocumentClasses();
 
         check(annotatedClasses);
 
