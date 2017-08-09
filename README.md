@@ -205,6 +205,58 @@ integration_test_person_group/person_group/_search?from=0&size=10
 
 }
 ```
+- Source filtering
+```
+integration_test_person_group/person_group/_search
+{
+    "_source": false,
+    "query" : {
+        "match" : { "name" : "name17" }
+    }
+}
+```
+```
+integration_test_person_group/person_group/_search
+{
+    "_source": {
+            "includes": [ "name", "persons.*" ],
+            "excludes": [ "date*", "version", "persons.age" ]
+        },
+    "query" : {
+        "match" : { "name" : "name17" }
+    }
+}
+```
+- prefix
+```
+integration_test_person_group/person_group/_search
+{ 
+  "query": {
+    "prefix" : { "name" : "name" }
+  }
+}
+```
+- wildcard
+```
+integration_test_person_group/person_group/_search
+{
+    "query": {
+        "wildcard" : { "name" : "name*" }
+    }
+}
+```
+- regexp
+```
+integration_test_person_group/person_group/_search
+{
+    "query": {
+        "regexp":{
+            "name": "na.*17"
+        }
+    }
+}
+```
+
 
 ### Elasticsearch admin
 Install [cerebro](https://github.com/lmenezes/cerebro) for elasticsearch admin web UI.
