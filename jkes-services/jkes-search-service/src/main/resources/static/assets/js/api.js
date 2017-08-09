@@ -2,19 +2,27 @@
 $("#request_body_search_form").submit(function (event) {
     event.preventDefault();
 
+    var target_container = $('#search_result_container');
+
     var $form = $(this),
         path = $form.find("#path").val(),
         request_body = $form.find("#request_body").val();
 
-    path = window.location.pathname + "/" + path;
+    var data;
+    try {
+        data = JSON.stringify(JSON.parse(request_body));
+    }catch (error) {
+        fillError(error);
+        return
+    }
 
-    var target_container = $('#search_result_container');
+    path = window.location.pathname + "/" + path;
 
     if(path.indexOf("_search") == -1) {
         $.get(path, function (dada) {
             fillResult(dada);
         }).fail(function (error) {
-            fillError(error);
+            fillError(error.responseText);
         });
     }else {
         $.ajax({
@@ -25,15 +33,20 @@ $("#request_body_search_form").submit(function (event) {
                 fillResult(data);
             },
             error: function (error) {
-                fillError(error);
+                fillError(error.responseText);
             },
-            data: JSON.stringify(request_body)
+            data: data
         });
     }
 
     var fillResult = function (data) {
-        var json = JSON.stringify(data, null, 4);
-        var code = $("<code contenteditable='true'/>").append(json);
+        var content;
+        try {
+            content = JSON.stringify(data, null, 4);
+        }catch (error) {
+            fillError(error);
+        }
+        var code = $("<code contenteditable='true'/>").append(content);
         var pre = $("<pre/>").append(code);
 
         target_container.empty();
@@ -46,8 +59,14 @@ $("#request_body_search_form").submit(function (event) {
     };
 
     function fillError(error) {
-        var json = JSON.stringify(error.responseJSON, null, 4);
-        var code = $("<code contenteditable='true'/>").append(json);
+        var content;
+        try {
+            content = JSON.stringify(JSON.parse(error), null, 4);
+        }catch (error) {
+            content = error;
+        }
+
+        var code = $("<code contenteditable='true'/>").append(content);
         var pre = $("<pre/>").append(code);
 
         target_container.empty();
