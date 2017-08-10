@@ -1,6 +1,6 @@
 package com.timeyang.jkes.spring.jpa.index;
 
-import com.timeyang.jkes.DocumentMetadata;
+import com.timeyang.jkes.core.Metadata;
 import com.timeyang.jkes.core.elasticsearch.indices.IndicesAdminClient;
 import com.timeyang.jkes.core.exception.JkesException;
 import com.timeyang.jkes.core.kafka.producer.JkesKafkaProducer;
@@ -10,6 +10,7 @@ import com.timeyang.jkes.spring.jpa.ContextSupport;
 import com.timeyang.jkes.spring.jpa.exception.NoAvailableRepositoryException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -42,7 +43,7 @@ public class ConcurrentIndexer implements Indexer {
     private static final Log logger = LogFactory.getLog(IndicesAdminClient.class);
 
     private final JkesKafkaProducer jkesKafkaProducer;
-    private final DocumentMetadata documentMetadata;
+    private final Metadata metadata;
     private final ContextSupport contextSupport;
     private ConcurrentMap<String, IndexTask<?>> tasksMap;
     private int pageSize = 200;
@@ -53,9 +54,9 @@ public class ConcurrentIndexer implements Indexer {
     private ConcurrentMap<String, Future<?>> inFlightTasksMap;
 
     @Inject
-    public ConcurrentIndexer(JkesKafkaProducer jkesKafkaProducer, DocumentMetadata documentMetadata, ContextSupport contextSupport) {
+    public ConcurrentIndexer(JkesKafkaProducer jkesKafkaProducer, Metadata metadata, ContextSupport contextSupport) {
         this.jkesKafkaProducer = jkesKafkaProducer;
-        this.documentMetadata = documentMetadata;
+        this.metadata = metadata;
         this.contextSupport = contextSupport;
 
         this.tasksMap = new ConcurrentHashMap<>();
@@ -66,7 +67,7 @@ public class ConcurrentIndexer implements Indexer {
 
     @PostConstruct
     public void init() {
-        Set<Class<?>> documentClasses = documentMetadata.getAnnotatedDocumentClasses();
+        Set<Class<?>> documentClasses = metadata.getAnnotatedDocuments();
         documentClasses.forEach(clazz -> {
             PagingAndSortingRepository repository = getRepositoryBean(clazz);
             addTask(new IndexTask() {
@@ -199,8 +200,10 @@ public class ConcurrentIndexer implements Indexer {
         String daoBeanName = Character.toLowerCase(className.charAt(0)) + className.substring(1) + "Dao";
 
         try {
-            Object bean = this.contextSupport.getBean(repositoryBeanName);
-            if(bean == null) {
+            Object bean;
+            try {
+                bean = this.contextSupport.getBean(repositoryBeanName);
+            }catch (NoSuchBeanDefinitionException e) {
                 bean = this.contextSupport.getBean(daoBeanName);
             }
 

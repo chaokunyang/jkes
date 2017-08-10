@@ -11,9 +11,13 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-import javax.persistence.*;
-
-import static sun.plugin.javascript.navig.JSType.Document;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 
 /**
  * @author chaokunyang
@@ -63,7 +67,7 @@ public class Person extends AuditedEntity {
     }
 
     /**
-     * 不加Field注解，测试序列化时是否忽略
+     * don't add @Field to test whether ignored
      */
     // @Field(type = FieldType.Text)
     public String getDescription() {

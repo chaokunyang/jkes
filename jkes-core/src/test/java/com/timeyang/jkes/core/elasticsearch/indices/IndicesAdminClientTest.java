@@ -1,6 +1,6 @@
 package com.timeyang.jkes.core.elasticsearch.indices;
 
-import com.timeyang.jkes.DocumentMetadata;
+import com.timeyang.jkes.core.Metadata;
 import com.timeyang.jkes.core.elasticsearch.EsRestClient;
 import com.timeyang.jkes.core.support.Config;
 import com.timeyang.jkes.core.support.JkesProperties;
@@ -29,7 +29,7 @@ public class IndicesAdminClientTest {
         Config.setJkesProperties(jkesProperties);
 
         esRestClient = new EsRestClient(jkesProperties);
-        indicesAdminClient = new IndicesAdminClient(esRestClient, jkesProperties, new DocumentMetadata(jkesProperties));
+        indicesAdminClient = new IndicesAdminClient(esRestClient, jkesProperties, new Metadata.MetadataBuilder(jkesProperties).build());
     }
 
     @Test

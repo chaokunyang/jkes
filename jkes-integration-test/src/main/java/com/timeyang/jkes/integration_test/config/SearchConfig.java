@@ -1,10 +1,14 @@
 package com.timeyang.jkes.integration_test.config;
 
 import com.timeyang.jkes.integration_test.Application;
+import com.timeyang.jkes.spring.jpa.EnableJkes;
 import com.timeyang.jkes.spring.jpa.EventSupport;
-import com.timeyang.jkes.spring.jpa.JkesSpringConfig;
 import com.timeyang.jkes.spring.jpa.SearchPlatformTransactionManager;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.ComponentScans;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
 
@@ -18,7 +22,8 @@ import javax.persistence.EntityManagerFactory;
     @ComponentScan(basePackageClasses = Application.class)
 })
 @EnableAspectJAutoProxy
-@Import(JkesSpringConfig.class)
+// @Import(JkesSpringConfig.class)
+@EnableJkes
 public class SearchConfig {
 
     @Bean

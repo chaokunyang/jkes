@@ -1,6 +1,6 @@
 package com.timeyang.jkes.core.kafka.connect;
 
-import com.timeyang.jkes.DocumentMetadata;
+import com.timeyang.jkes.core.Metadata;
 import com.timeyang.jkes.core.kafka.util.KafkaConnectUtils;
 import com.timeyang.jkes.core.support.Config;
 import com.timeyang.jkes.core.support.DefaultJkesPropertiesImpl;
@@ -25,7 +25,7 @@ public class KafkaConnectClientTest {
         };
         Config.setJkesProperties(jkesProperties);
 
-        KafkaConnectClient kafkaConnectClient = new KafkaConnectClient(jkesProperties, new DocumentMetadata(jkesProperties));
+        KafkaConnectClient kafkaConnectClient = new KafkaConnectClient(jkesProperties, new Metadata.MetadataBuilder(jkesProperties).build());
         String connectorName = KafkaConnectUtils.getConnectorName(Person.class);
         if(!kafkaConnectClient.checkConnectorExists(connectorName))
             kafkaConnectClient.createIndexSinkConnectorIfAbsent(Person.class);
@@ -42,7 +42,7 @@ public class KafkaConnectClientTest {
         Config.setJkesProperties(jkesProperties);
 
         String connectorName = KafkaConnectUtils.getConnectorName(Person.class);
-        new KafkaConnectClient(jkesProperties, new DocumentMetadata(jkesProperties)).deleteConnector(connectorName);
+        new KafkaConnectClient(jkesProperties, new Metadata.MetadataBuilder(jkesProperties).build()).deleteConnector(connectorName);
     }
 
     @Test
@@ -56,7 +56,7 @@ public class KafkaConnectClientTest {
         Config.setJkesProperties(jkesProperties);
 
         String connectorName = KafkaConnectUtils.getConnectorName(Person.class);
-        System.out.println(new KafkaConnectClient(jkesProperties, new DocumentMetadata(jkesProperties)).checkConnectorExists(connectorName));
+        System.out.println(new KafkaConnectClient(jkesProperties, new Metadata.MetadataBuilder(jkesProperties).build()).checkConnectorExists(connectorName));
     }
 
 }

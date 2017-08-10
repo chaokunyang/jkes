@@ -1,6 +1,6 @@
 package com.timeyang.jkes.core.kafka.connect;
 
-import com.timeyang.jkes.DocumentMetadata;
+import com.timeyang.jkes.core.Metadata;
 import com.timeyang.jkes.core.annotation.Document;
 import com.timeyang.jkes.core.http.HttpClient;
 import com.timeyang.jkes.core.http.Response;
@@ -35,7 +35,7 @@ public class KafkaConnectClient {
     private static final HttpClient HTTP_CLIENT = HttpClient.getInstance();
 
     private final JkesProperties jkesProperties;
-    private final DocumentMetadata documentMetadata;
+    private final Metadata metadata;
     private final String[] urls;
 
     // locks for index connectors
@@ -44,15 +44,15 @@ public class KafkaConnectClient {
     private final Lock deleteLock = new ReentrantLock();
 
     @Inject
-    public KafkaConnectClient(JkesProperties jkesProperties, DocumentMetadata documentMetadata) {
+    public KafkaConnectClient(JkesProperties jkesProperties, Metadata metadata) {
         this.jkesProperties = jkesProperties;
         this.urls = jkesProperties.getKafkaConnectServers().split("\\s*,");
-        this.documentMetadata = documentMetadata;
+        this.metadata = metadata;
     }
 
     @PostConstruct
     public void init() {
-        documentMetadata.getAnnotatedDocumentClasses().forEach(clazz -> {
+        metadata.getAnnotatedDocuments().forEach(clazz -> {
             String connectorName = KafkaConnectUtils.getConnectorName(clazz);
             if(checkConnectorExists(connectorName)) {
                 updateIndexSinkConnector(clazz);

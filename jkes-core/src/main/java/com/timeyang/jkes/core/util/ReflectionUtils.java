@@ -12,6 +12,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -108,8 +109,7 @@ public class ReflectionUtils {
         return clazz;
     }
 
-    public static String getFieldNameForGetter(Method method) {
-        String methodName = method.getName();
+    public static String getFieldNameForGetter(String methodName) {
         Asserts.check(methodName.startsWith("get") || methodName.startsWith("is"),
                 "the method is not a getter method");
         if(methodName.startsWith("get")) {
@@ -118,6 +118,12 @@ public class ReflectionUtils {
             return methodName.substring(2);
         }
     }
+
+    public static String getFieldNameForGetter(Method method) {
+        String methodName = method.getName();
+        return getFieldNameForGetter(methodName);
+    }
+
 
     /**
      * Invoke specified method in target class or super class, regardless of access level of method
@@ -181,6 +187,46 @@ public class ReflectionUtils {
 
         return null;
     }
+
+    /**
+     * Get annotated field. The field can be in parent field
+     *
+     * @param clazz clazz
+     * @param fieldName fieldName
+     * @param annotation annotation
+     * @return annotated field.
+     */
+    public static Field getAnnotatedField(Class<?> clazz, String fieldName, Class<? extends Annotation> annotation) {
+        do {
+            Field[] fields = clazz.getDeclaredFields();
+            for(Field field : fields) {
+                if(Objects.equals(fieldName, field.getName()) && field.isAnnotationPresent(annotation)) {
+                    return field;
+                }
+            }
+
+            clazz = clazz.getSuperclass();
+        }while (clazz != null);
+
+        return null;
+    }
+
+    /**
+     * Get annotated field. The field can be in parent field
+     *
+     * @param clazz clazz
+     * @param fieldName fieldName
+     * @param annotationClass annotationClass
+     * @return annotated field.
+     */
+    public static <T extends Annotation> T getFieldAnnotation(Class<?> clazz, String fieldName, Class<T> annotationClass) {
+        Field annotatedField = getAnnotatedField(clazz, fieldName, annotationClass);
+        if (annotatedField != null) {
+            return annotatedField.getAnnotation(annotationClass);
+        }
+        return null;
+    }
+
 
     /**
      * Get return value of annotated method

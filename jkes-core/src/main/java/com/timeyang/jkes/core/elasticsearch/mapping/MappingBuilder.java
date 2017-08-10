@@ -4,6 +4,7 @@ import com.timeyang.jkes.core.annotation.Field;
 import com.timeyang.jkes.core.annotation.FieldType;
 import com.timeyang.jkes.core.annotation.InnerField;
 import com.timeyang.jkes.core.annotation.MultiFields;
+import com.timeyang.jkes.core.annotation.NotThreadSafe;
 import com.timeyang.jkes.core.exception.FieldTypeInferException;
 import com.timeyang.jkes.core.util.DocumentUtils;
 import com.timeyang.jkes.core.util.ReflectionUtils;
@@ -28,8 +29,11 @@ import java.util.Set;
  disable dynamically adding field for document and inner object
  (inherit the setting from their parent object or from the mapping type).
  to make application annotation become only source of truth for mapping in elasticsearch</p>
+ *
+ * <p>Note this class must be created for each document</p>
  * @author chaokunyang
  */
+@NotThreadSafe
 public class MappingBuilder {
 
     private static final Set<String> primitives = new HashSet<>(8);
@@ -78,14 +82,29 @@ public class MappingBuilder {
         Method[] methods = clazz.getMethods(); // include superclass methods
         for(Method method : methods) {
             Field fieldAnnotation = method.getAnnotation(Field.class);
+
+            if(fieldAnnotation == null) {
+                String methodName = method.getName();
+                if(methodName.startsWith("get") || methodName.startsWith("is")) {
+                    String memberFieldName = ReflectionUtils.getFieldNameForGetter(methodName);
+                    fieldAnnotation = ReflectionUtils.getFieldAnnotation(clazz, memberFieldName, Field.class);
+                }
+            }
+
             if(fieldAnnotation != null && !willRecursive(method)) {
 
                 // all single field mapping is added here, getSingleFieldMapping method just generate the value
                 properties.put(DocumentUtils.getFieldName(method),
                         getSingleFieldMapping(method, fieldAnnotation));
-
             }else {
                 MultiFields multiFields = method.getAnnotation(MultiFields.class);
+                if(multiFields == null) {
+                    String methodName = method.getName();
+                    if(methodName.startsWith("get") || methodName.startsWith("is")) {
+                        String memberFieldName = ReflectionUtils.getFieldNameForGetter(methodName);
+                        multiFields = ReflectionUtils.getFieldAnnotation(clazz, memberFieldName, MultiFields.class);
+                    }
+                }
                 if(multiFields != null && !willRecursive(method)) {
 
                     // all multi fields mapping is added here, getMultiFieldsMapping method just generate the value
@@ -93,6 +112,7 @@ public class MappingBuilder {
                             getMultiFieldsMapping(method, multiFields));
                 }
             }
+
         }
 
         context.removeLast();
@@ -241,9 +261,9 @@ public class MappingBuilder {
         }else if(returnType.matches("short|.*Short$")) {
             fieldType = FieldType.Short;
         }else if(returnType.matches("int|.*Integer$")) {
-            fieldType = FieldType.Long;
+            fieldType = FieldType.Integer;
         }else if(returnType.matches("long|.*Long$")) {
-            fieldType = FieldType.Short;
+            fieldType = FieldType.Long;
         }else if(returnType.matches("float|.*Float$")) {
             fieldType = FieldType.Float;
         }else if(returnType.matches("double|.*Double$")) {
