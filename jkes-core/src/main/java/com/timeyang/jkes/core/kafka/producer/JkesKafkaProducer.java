@@ -18,7 +18,7 @@ import java.util.concurrent.Future;
  * @author chaokunyang
  */
 @Named
-public class JkesKafkaProducer {
+public final class JkesKafkaProducer {
 
     private KafkaProducer<String, Object> producer;
 

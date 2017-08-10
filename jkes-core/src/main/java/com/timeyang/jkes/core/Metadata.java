@@ -23,7 +23,7 @@ import java.util.Set;
  */
 @Immutable
 @Named // TODO REMOVE
-public class Metadata {
+public final class Metadata {
 
     private final Set<Class<?>> annotatedDocuments;
 
@@ -95,7 +95,7 @@ public class Metadata {
                         }
                     }
                     if(field != null) {
-                        DocumentMetadata metadata = new DocumentMetadata(clazz, method, field, null);
+                        DocumentMetadata metadata = DocumentMetadata.valueOfField(clazz, method, field);
                         methodSet.add(metadata);
                     }else {
                         MultiFields multiFields = method.getAnnotation(MultiFields.class);
@@ -107,7 +107,7 @@ public class Metadata {
                             }
                         }
                         if(multiFields != null) {
-                            DocumentMetadata metadata = new DocumentMetadata(clazz, method, null, multiFields);
+                            DocumentMetadata metadata = DocumentMetadata.valueOfMultiFields(clazz, method, multiFields);
                             methodSet.add(metadata);
                         }
                     }
