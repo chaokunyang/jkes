@@ -1,6 +1,6 @@
 package com.timeyang.jkes.core.kafka.connect;
 
-import com.timeyang.jkes.core.Metadata;
+import com.timeyang.jkes.core.metadata.Metadata;
 import com.timeyang.jkes.core.kafka.util.KafkaConnectUtils;
 import com.timeyang.jkes.core.support.Config;
 import com.timeyang.jkes.core.support.DefaultJkesPropertiesImpl;

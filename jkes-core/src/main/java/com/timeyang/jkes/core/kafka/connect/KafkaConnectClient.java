@@ -1,6 +1,6 @@
 package com.timeyang.jkes.core.kafka.connect;
 
-import com.timeyang.jkes.core.Metadata;
+import com.timeyang.jkes.core.metadata.Metadata;
 import com.timeyang.jkes.core.annotation.Document;
 import com.timeyang.jkes.core.http.HttpClient;
 import com.timeyang.jkes.core.http.Response;

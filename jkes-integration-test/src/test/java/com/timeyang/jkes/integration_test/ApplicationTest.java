@@ -5,7 +5,7 @@ import com.timeyang.jkes.core.kafka.producer.JkesKafkaProducer;
 import com.timeyang.jkes.core.kafka.util.KafkaUtils;
 import com.timeyang.jkes.integration_test.domain.PersonGroup;
 import com.timeyang.jkes.integration_test.repository.PersonGroupRepository;
-import com.timeyang.jkes.spring.jpa.index.ConcurrentIndexer;
+import com.timeyang.jkes.spring.jpa.index.ThreadPoolIndexer;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +37,7 @@ public class ApplicationTest {
     private KafkaConnectClient kafkaConnectClient;
 
     @Autowired
-    private ConcurrentIndexer concurrentIndexer;
+    private ThreadPoolIndexer threadPoolIndexer;
 
     @Test
     public void test() {
@@ -132,9 +132,9 @@ public class ApplicationTest {
         //     }
         // });
 
-        concurrentIndexer.startAll();
+        threadPoolIndexer.startAll();
         try {
-            concurrentIndexer.awaitTermination(Integer.MAX_VALUE, TimeUnit.SECONDS);
+            threadPoolIndexer.awaitTermination(Integer.MAX_VALUE, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }

@@ -1,7 +1,7 @@
 package com.timeyang.jkes.core.util;
 
 import com.timeyang.jkes.core.annotation.Document;
-import com.timeyang.jkes.core.annotation.DocumentVersion;
+import com.timeyang.jkes.core.annotation.Version;
 import com.timeyang.jkes.core.annotation.Field;
 import com.timeyang.jkes.core.annotation.MultiFields;
 import com.timeyang.jkes.core.elasticsearch.exception.IllegalAnnotatedFieldException;
@@ -82,7 +82,7 @@ public class DocumentUtils {
     public static String getVersionField(Class<?> clazz) {
         Method[] methods = clazz.getMethods();
         for(Method method : methods) {
-            if(method.isAnnotationPresent(Field.class) && method.isAnnotationPresent(DocumentVersion.class)) {
+            if(method.isAnnotationPresent(Field.class) && method.isAnnotationPresent(Version.class)) {
                 return getFieldName(method);
             }
         }

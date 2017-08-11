@@ -1,6 +1,6 @@
 package com.timeyang.jkes.core.elasticsearch.indices;
 
-import com.timeyang.jkes.core.Metadata;
+import com.timeyang.jkes.core.metadata.Metadata;
 import com.timeyang.jkes.core.elasticsearch.EsRestClient;
 import com.timeyang.jkes.core.support.JkesProperties;
 import com.timeyang.jkes.core.util.DocumentUtils;
