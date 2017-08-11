@@ -1,6 +1,7 @@
 package com.timeyang.jkes.spring.jpa;
 
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
@@ -23,12 +24,20 @@ public class ContextSupport implements ApplicationContextAware {
     public synchronized  Object getBean(String beanName) throws InterruptedException {
         if(this.applicationContext == null)
             wait();
-        return this.applicationContext.getBean(beanName);
+        try {
+            return this.applicationContext.getBean(beanName);
+        }catch (NoSuchBeanDefinitionException e) {
+            return null;
+        }
     }
 
     public synchronized Object getBean(Class<?> requiredType) throws InterruptedException {
         if(this.applicationContext == null)
             wait();
-        return this.applicationContext.getBean(requiredType);
+        try {
+            return this.applicationContext.getBean(requiredType);
+        }catch (NoSuchBeanDefinitionException e) {
+            return null;
+        }
     }
 }

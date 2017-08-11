@@ -10,7 +10,6 @@ import com.timeyang.jkes.spring.jpa.ContextSupport;
 import com.timeyang.jkes.spring.jpa.exception.NoAvailableRepositoryException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -200,12 +199,10 @@ public class ConcurrentIndexer implements Indexer {
         String daoBeanName = Character.toLowerCase(className.charAt(0)) + className.substring(1) + "Dao";
 
         try {
-            Object bean;
-            try {
-                bean = this.contextSupport.getBean(repositoryBeanName);
-            }catch (NoSuchBeanDefinitionException e) {
+            Object bean = this.contextSupport.getBean(repositoryBeanName);
+
+            if(bean == null)
                 bean = this.contextSupport.getBean(daoBeanName);
-            }
 
             if(bean == null) {
                 RepositoryBean annotation = entityClass.getAnnotation(RepositoryBean.class);
