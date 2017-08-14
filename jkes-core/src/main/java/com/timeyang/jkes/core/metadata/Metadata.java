@@ -15,6 +15,7 @@ import com.timeyang.jkes.core.util.ReflectionUtils;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
+import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Collections;
@@ -66,11 +67,19 @@ public final class Metadata {
     @Named
     public static class MetadataBuilder implements Provider<Metadata> {
 
+        private Set<FieldMetadata> fieldMetadataSet;
+        private Set<MultiFieldsMetadata> multiFieldsMetadataSet;
+        private IdMetadata idMetadata = null;
+        private VersionMetadata versionMetadata = null;
+
         private JkesProperties jkesProperties;
 
         @Inject
         public MetadataBuilder(JkesProperties jkesProperties) {
             this.jkesProperties = jkesProperties;
+
+            this.fieldMetadataSet = new HashSet<>();
+            this.multiFieldsMetadataSet = new HashSet<>();
         }
 
         public Metadata build() {
@@ -85,93 +94,15 @@ public final class Metadata {
             Map<Class<?>, DocumentMetadata> map = new HashMap<>();
 
             annotatedClasses.forEach(clazz -> {
-                Set<FieldMetadata> fieldMetadataSet = new HashSet<>();
-                Set<MultiFieldsMetadata> multiFieldsMetadataSet = new HashSet<>();
-                IdMetadata idMetadata = null;
-                VersionMetadata versionMetadata = null;
+                DocumentMetadata.builder();
 
                 Map<String, Method> memberFieldsToCheck = new HashMap<>(); // ensure constant search time
 
                 Class<?> c = clazz;
                 do {
-                    Method[] methods = clazz.getDeclaredMethods();
-                    for(Method method : methods) {
-                        if(Modifier.isPublic(method.getModifiers())) {
+                    handleMethods(c, memberFieldsToCheck);
 
-                            Field field = method.getAnnotation(Field.class);
-                            String fieldName = DocumentUtils.getFieldName(method);
-
-                            DocumentId documentId = method.getAnnotation(DocumentId.class);
-                            if(documentId != null) {
-                                idMetadata = new IdMetadata(method, field, fieldName);
-                            }
-
-                            Version version = method.getAnnotation(Version.class);
-                            if(version != null) {
-                                versionMetadata = new VersionMetadata(method, field, fieldName);
-                            }
-
-                            if(field != null) {
-                                fieldMetadataSet.add(new FieldMetadata(method, field, fieldName));
-                                continue;
-                            }else if(documentId != null || version != null) {
-                                continue;
-                            }
-
-                            MultiFields multiFields = method.getAnnotation(MultiFields.class);
-                            if(multiFields != null) {
-                                multiFieldsMetadataSet.add(new MultiFieldsMetadata(method,
-                                        multiFields, fieldName));
-                                continue;
-                            }
-
-                            // field and multiFields is null
-                            String methodName = method.getName();
-                            if(methodName.startsWith("get") || methodName.startsWith("is")) {
-                                String memberFieldName = ReflectionUtils.getFieldNameForGetter(methodName);
-                                memberFieldsToCheck.put(memberFieldName, method);
-                            }
-                        }
-                    }
-
-                    java.lang.reflect.Field[] declaredFields = c.getDeclaredFields();
-                    for(java.lang.reflect.Field memberField : declaredFields) {
-                        String memberFieldName = memberField.getName();
-                        if(memberFieldsToCheck.containsKey(memberFieldName)) {
-
-                            Method method = memberFieldsToCheck.get(memberFieldName);
-
-                            Field field = memberField.getAnnotation(Field.class);
-                            String fieldName = DocumentUtils.getFieldName(method);
-
-                            DocumentId documentId = method.getAnnotation(DocumentId.class);
-                            if(documentId != null) {
-                                idMetadata = new IdMetadata(method, field, fieldName);
-                            }
-
-                            Version version = method.getAnnotation(Version.class);
-                            if(version != null) {
-                                versionMetadata = new VersionMetadata(method, field, fieldName);
-                            }
-
-                            if(field != null) {
-                                fieldMetadataSet.add(new FieldMetadata(method, field, fieldName));
-                                memberFieldsToCheck.remove(memberFieldName);
-                                continue;
-                            }else if(documentId != null || version != null) {
-                                memberFieldsToCheck.remove(memberFieldName);
-                                continue;
-                            }
-
-                            MultiFields multiFields = method.getAnnotation(MultiFields.class);
-                            if(multiFields != null) {
-                                multiFieldsMetadataSet.add(new MultiFieldsMetadata(method,
-                                        multiFields, fieldName));
-
-                                memberFieldsToCheck.remove(memberFieldName);
-                            }
-                        }
-                    }
+                    handleFields(c, memberFieldsToCheck);
 
                     c = clazz.getSuperclass();
 
@@ -182,15 +113,91 @@ public final class Metadata {
 
 
                 DocumentMetadata documentMetadata = DocumentMetadata.builder()
-                        .idMetadata(idMetadata)
-                        .versionMetadata(versionMetadata)
-                        .fieldMetadataSet(fieldMetadataSet)
-                        .multiFieldsMetadataSet(multiFieldsMetadataSet)
+                        .idMetadata(this.idMetadata)
+                        .versionMetadata(this.versionMetadata)
+                        .fieldMetadataSet(this.fieldMetadataSet)
+                        .multiFieldsMetadataSet(this.multiFieldsMetadataSet)
                         .build();
                 map.put(clazz, documentMetadata);
             });
 
             return map;
+        }
+
+        private void handleMethods(Class<?> clazz, Map<String, Method> memberFieldsToCheck) {
+            Method[] methods = clazz.getDeclaredMethods();
+            for(Method method : methods) {
+                if(Modifier.isPublic(method.getModifiers())) {
+
+                    boolean notAnnotated = handleMember(method, method);
+
+                    // field and multiFields is null
+                    if(notAnnotated) {
+                        String methodName = method.getName();
+                        if(methodName.startsWith("get") || methodName.startsWith("is")) {
+                            String memberFieldName = ReflectionUtils.getFieldNameForGetter(methodName);
+                            memberFieldsToCheck.put(memberFieldName, method);
+                        }
+                    }
+                }
+            }
+        }
+
+        private void handleFields(Class<?> c, Map<String, Method> memberFieldsToCheck) {
+            java.lang.reflect.Field[] declaredFields = c.getDeclaredFields();
+            for(java.lang.reflect.Field memberField : declaredFields) {
+                String memberFieldName = memberField.getName();
+                if(memberFieldsToCheck.containsKey(memberFieldName)) {
+
+                    Method method = memberFieldsToCheck.get(memberFieldName);
+
+                    handleMember(memberField, method);
+                }
+            }
+        }
+
+        /**
+         * If member is annotated, return true, else return false.
+         * <p>If member is annotated and corresponding metadata is not filled, fill the metadata</p>
+         *
+         * @param member member to check annotation
+         * @param method method
+         * @return whether member is annotated
+         */
+        private boolean handleMember(AccessibleObject member, Method method) {
+            Field field = member.getAnnotation(Field.class);
+            String fieldName = DocumentUtils.getFieldName(method);
+
+            DocumentId documentId = member.getAnnotation(DocumentId.class);
+            if(documentId != null && this.idMetadata != null) {
+                this.idMetadata = new IdMetadata(method, field, fieldName);
+            }
+
+            Version version = member.getAnnotation(Version.class);
+            if(version != null && this.versionMetadata != null) {
+                this.versionMetadata = new VersionMetadata(method, field, fieldName);
+            }
+
+            if(field != null) {
+                FieldMetadata fieldMetadata = new FieldMetadata(method, field, fieldName);
+                if(!this.fieldMetadataSet.contains(fieldMetadata))
+                    this.fieldMetadataSet.add(fieldMetadata);
+                return true;
+            }else if(documentId != null || version != null) {
+                return true;
+            }
+
+            MultiFields multiFields = member.getAnnotation(MultiFields.class);
+            if(multiFields != null) {
+                MultiFieldsMetadata multiFieldsMetadata =
+                        new MultiFieldsMetadata(method, multiFields, fieldName);
+                if(!this.multiFieldsMetadataSet.contains(multiFieldsMetadata))
+                    this.multiFieldsMetadataSet.add(multiFieldsMetadata);
+
+                return true;
+            }
+
+            return false;
         }
 
         @Override

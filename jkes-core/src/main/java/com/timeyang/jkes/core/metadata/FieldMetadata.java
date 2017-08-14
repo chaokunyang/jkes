@@ -30,4 +30,25 @@ public class FieldMetadata {
     public String getFieldName() {
         return fieldName;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof FieldMetadata)) return false;
+
+        FieldMetadata that = (FieldMetadata) o;
+
+        if (!method.equals(that.method)) return false;
+        if (!field.equals(that.field)) return false;
+        return fieldName.equals(that.fieldName);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = method.hashCode();
+        result = 31 * result + field.hashCode();
+        result = 31 * result + fieldName.hashCode();
+        return result;
+    }
 }
