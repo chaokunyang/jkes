@@ -2,10 +2,9 @@ package com.timeyang.jkes.integration_test;
 
 import com.timeyang.jkes.core.kafka.connect.KafkaConnectClient;
 import com.timeyang.jkes.core.kafka.producer.JkesKafkaProducer;
-import com.timeyang.jkes.core.kafka.util.KafkaUtils;
 import com.timeyang.jkes.integration_test.domain.PersonGroup;
 import com.timeyang.jkes.integration_test.repository.PersonGroupRepository;
-import com.timeyang.jkes.spring.jpa.index.ThreadPoolIndexer;
+import com.timeyang.jkes.spring.jpa.index.Indexer;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,13 +36,13 @@ public class ApplicationTest {
     private KafkaConnectClient kafkaConnectClient;
 
     @Autowired
-    private ThreadPoolIndexer threadPoolIndexer;
+    private Indexer indexer;
 
     @Test
     public void test() {
         // addData();
         // queryAndSendData();
-        queryAndSend();
+        // queryAndSend();
         sendData();
     }
 
@@ -115,46 +114,36 @@ public class ApplicationTest {
     }
 
     public void queryAndSend() {
-        // concurrentIndexer.addTask(new IndexTask<PersonGroup>() {
-        //     @Override
-        //     public Class<PersonGroup> getDomainClass() {
-        //         return PersonGroup.class;
-        //     }
-        //
-        //     @Override
-        //     public long count() {
-        //         return personGroupRepository.count();
-        //     }
-        //
-        //     @Override
-        //     public Page<PersonGroup> getData(Pageable pageable) {
-        //         return personGroupRepository.findAll(pageable);
-        //     }
-        // });
+        long start = System.currentTimeMillis();
 
-        threadPoolIndexer.startAll();
+        indexer.startAll();
         try {
-            threadPoolIndexer.awaitTermination(Integer.MAX_VALUE, TimeUnit.SECONDS);
+            indexer.awaitTermination(Integer.MAX_VALUE, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+
+        long elapsed = System.currentTimeMillis() - start;
+        System.out.println("elapsed time = " + elapsed + "ms");
     }
 
     public void sendData() {
         long start = System.currentTimeMillis();
 
-        int nThreads = 10;
+        int nThreads = 4;
         ExecutorService exec = Executors.newFixedThreadPool(nThreads);
-        int sizePerThread = 2_000;
+        int sizePerThread = 3_0000;
 
         for(int i = 0; i < nThreads; i++) {
-            String topic = KafkaUtils.getTopic(PersonGroup.class);
-            for(int j = 0; j < sizePerThread; j++) {
-                PersonGroup personGroup = generatePersonGroup(j);
-                long id = (long)(i * sizePerThread + j);
-                personGroup.setId(id);
-                jkesKafkaProducer.send(personGroup);
-            }
+            int thread_number = i;
+            exec.execute(() -> {
+                for(int j = 0; j < sizePerThread; j++) {
+                    PersonGroup personGroup = generatePersonGroup(j);
+                    long id = (long)(thread_number * sizePerThread + j);
+                    personGroup.setId(id);
+                    jkesKafkaProducer.send(personGroup);
+                }
+            });
 
         }
 

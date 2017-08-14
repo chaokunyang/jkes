@@ -183,7 +183,7 @@ class ForkJoinIndexer extends AbstractIndexer implements Indexer {
             int perSize = Math.min(PAGE_SIZE, rest);
 
             while (perSize > 0) {
-                if(Thread.interrupted()) return;
+                if(isCancelled()) return; // doesn't work, why?
 
                 int send = sendData(offset, perSize, domainClass);
                 synchronized (progress) {
@@ -199,7 +199,6 @@ class ForkJoinIndexer extends AbstractIndexer implements Indexer {
                 perSize = Math.min(PAGE_SIZE, rest);
 
             }
-
         }
 
         private <T> int sendData(int start, int size, Class<T> domainClass) {
