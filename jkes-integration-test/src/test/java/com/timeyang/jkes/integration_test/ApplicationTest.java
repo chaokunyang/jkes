@@ -132,7 +132,7 @@ public class ApplicationTest {
 
         int nThreads = 4;
         ExecutorService exec = Executors.newFixedThreadPool(nThreads);
-        int sizePerThread = 3_0000;
+        int sizePerThread = 4_0000;
 
         for(int i = 0; i < nThreads; i++) {
             int thread_number = i;

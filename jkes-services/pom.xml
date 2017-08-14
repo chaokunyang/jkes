@@ -6,11 +6,11 @@
     <parent>
         <artifactId>jkes</artifactId>
         <groupId>com.timeyang.jkes</groupId>
-        <version>1.0.0</version>
+        <version>1.1.0</version>
     </parent>
 
     <groupId>com.timeyang.jkes.services</groupId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
     <artifactId>jkes-services</artifactId>
     <packaging>pom</packaging>
     <modules>

@@ -7,11 +7,11 @@
     <parent>
         <artifactId>jkes-services</artifactId>
         <groupId>com.timeyang.jkes.services</groupId>
-        <version>1.0.0</version>
+        <version>1.1.0</version>
     </parent>
 
     <artifactId>jkes-delete-connector</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
 
     <properties>
         <confluent.version>3.2.1</confluent.version>
