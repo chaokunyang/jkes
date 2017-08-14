@@ -3,6 +3,7 @@ package com.timeyang.jkes.core.metadata;
 import com.timeyang.jkes.core.annotation.Immutable;
 import lombok.Builder;
 
+import java.util.Collections;
 import java.util.Set;
 
 /**
@@ -31,11 +32,34 @@ public final class DocumentMetadata {
             VersionMetadata versionMetadata,
             String topic) {
         this.clazz = clazz;
-        this.fieldMetadataSet = fieldMetadataSet;
-        this.multiFieldsMetadataSet = multiFieldsMetadataSet;
+        this.fieldMetadataSet = Collections.unmodifiableSet(fieldMetadataSet);
+        this.multiFieldsMetadataSet = Collections.unmodifiableSet(multiFieldsMetadataSet);
         this.idMetadata = idMetadata;
         this.versionMetadata = versionMetadata;
         this.topic = topic;
     }
 
+    public Class<?> getClazz() {
+        return clazz;
+    }
+
+    public Set<FieldMetadata> getFieldMetadataSet() {
+        return fieldMetadataSet;
+    }
+
+    public Set<MultiFieldsMetadata> getMultiFieldsMetadataSet() {
+        return multiFieldsMetadataSet;
+    }
+
+    public IdMetadata getIdMetadata() {
+        return idMetadata;
+    }
+
+    public VersionMetadata getVersionMetadata() {
+        return versionMetadata;
+    }
+
+    public String getTopic() {
+        return topic;
+    }
 }

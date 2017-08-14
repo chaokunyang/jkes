@@ -11,7 +11,7 @@ import java.lang.annotation.*;
  * @author chaokunyang
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.METHOD })
+@Target({ ElementType.METHOD, ElementType.FIELD })
 @Documented
 public @interface DocumentId {
 }

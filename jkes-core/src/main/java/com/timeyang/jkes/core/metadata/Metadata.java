@@ -12,6 +12,7 @@ import com.timeyang.jkes.core.util.ClassUtils;
 import com.timeyang.jkes.core.util.DocumentUtils;
 import com.timeyang.jkes.core.util.ReflectionUtils;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
@@ -31,6 +32,8 @@ import java.util.Set;
 @Named // TODO REMOVE
 public final class Metadata {
 
+    private volatile static Metadata metadata; // use volatile to ensure safely publish
+
     private final Set<Class<?>> annotatedDocuments;
 
     private final Map<Class<?>, DocumentMetadata> documentMetadataMap;
@@ -45,7 +48,12 @@ public final class Metadata {
     public Metadata(JkesProperties jkesProperties) {
         Metadata m = new MetadataBuilder(jkesProperties).build();
         this.annotatedDocuments = m.getAnnotatedDocuments();
-        this.documentMetadataMap = m.getMetadata();
+        this.documentMetadataMap = m.getMetadataMap();
+    }
+
+    @PostConstruct
+    public void init() {
+        metadata = this;
     }
 
     /**
@@ -60,26 +68,22 @@ public final class Metadata {
      * Get documents metadata of all class annotated with {@link Document}
      * @return documents metadata
      */
-    public Map<Class<?>, DocumentMetadata> getMetadata() {
+    public Map<Class<?>, DocumentMetadata> getMetadataMap() {
         return documentMetadataMap;
+    }
+
+    public static Metadata getMetadata() {
+        return metadata;
     }
 
     @Named
     public static class MetadataBuilder implements Provider<Metadata> {
-
-        private Set<FieldMetadata> fieldMetadataSet;
-        private Set<MultiFieldsMetadata> multiFieldsMetadataSet;
-        private IdMetadata idMetadata = null;
-        private VersionMetadata versionMetadata = null;
 
         private JkesProperties jkesProperties;
 
         @Inject
         public MetadataBuilder(JkesProperties jkesProperties) {
             this.jkesProperties = jkesProperties;
-
-            this.fieldMetadataSet = new HashSet<>();
-            this.multiFieldsMetadataSet = new HashSet<>();
         }
 
         public Metadata build() {
@@ -94,34 +98,56 @@ public final class Metadata {
             Map<Class<?>, DocumentMetadata> map = new HashMap<>();
 
             annotatedClasses.forEach(clazz -> {
-                DocumentMetadata.builder();
+                DocumentMetadata documentMetadata =
+                        new DocumentMetadataBuilder().buildDocumentMetadata(clazz);
 
-                Map<String, Method> memberFieldsToCheck = new HashMap<>(); // ensure constant search time
-
-                Class<?> c = clazz;
-                do {
-                    handleMethods(c, memberFieldsToCheck);
-
-                    handleFields(c, memberFieldsToCheck);
-
-                    c = clazz.getSuperclass();
-
-                    if(!c.isAnnotationPresent(MappedSuperclass.class) &&
-                            !c.isAnnotationPresent(javax.persistence.MappedSuperclass.class))
-                        break;
-                } while (c != Object.class);
-
-
-                DocumentMetadata documentMetadata = DocumentMetadata.builder()
-                        .idMetadata(this.idMetadata)
-                        .versionMetadata(this.versionMetadata)
-                        .fieldMetadataSet(this.fieldMetadataSet)
-                        .multiFieldsMetadataSet(this.multiFieldsMetadataSet)
-                        .build();
                 map.put(clazz, documentMetadata);
             });
 
             return map;
+        }
+
+
+        @Override
+        public Metadata get() {
+            return build();
+        }
+    }
+
+    private static class DocumentMetadataBuilder {
+        private Set<FieldMetadata> fieldMetadataSet;
+        private Set<MultiFieldsMetadata> multiFieldsMetadataSet;
+        private IdMetadata idMetadata = null;
+        private VersionMetadata versionMetadata = null;
+
+        private DocumentMetadataBuilder() {
+            this.fieldMetadataSet = new HashSet<>();
+            this.multiFieldsMetadataSet = new HashSet<>();
+        }
+
+        private DocumentMetadata buildDocumentMetadata(Class<?> clazz) {
+            Map<String, Method> memberFieldsToCheck = new HashMap<>(); // ensure constant search time
+
+            Class<?> c = clazz;
+            do {
+                handleMethods(c, memberFieldsToCheck);
+
+                handleFields(c, memberFieldsToCheck);
+
+                c = c.getSuperclass();
+
+                if(!c.isAnnotationPresent(MappedSuperclass.class) &&
+                        !c.isAnnotationPresent(javax.persistence.MappedSuperclass.class))
+                    break;
+            } while (c != Object.class);
+
+
+            return DocumentMetadata.builder()
+                    .idMetadata(this.idMetadata)
+                    .versionMetadata(this.versionMetadata)
+                    .fieldMetadataSet(this.fieldMetadataSet)
+                    .multiFieldsMetadataSet(this.multiFieldsMetadataSet)
+                    .build();
         }
 
         private void handleMethods(Class<?> clazz, Map<String, Method> memberFieldsToCheck) {
@@ -129,10 +155,10 @@ public final class Metadata {
             for(Method method : methods) {
                 if(Modifier.isPublic(method.getModifiers())) {
 
-                    boolean notAnnotated = handleMember(method, method);
+                    boolean annotated = handleMember(method, method);
 
-                    // field and multiFields is null
-                    if(notAnnotated) {
+                    // not annotated
+                    if(!annotated) {
                         String methodName = method.getName();
                         if(methodName.startsWith("get") || methodName.startsWith("is")) {
                             String memberFieldName = ReflectionUtils.getFieldNameForGetter(methodName);
@@ -166,29 +192,33 @@ public final class Metadata {
          */
         private boolean handleMember(AccessibleObject member, Method method) {
             Field field = member.getAnnotation(Field.class);
-            String fieldName = DocumentUtils.getFieldName(method);
-
-            DocumentId documentId = member.getAnnotation(DocumentId.class);
-            if(documentId != null && this.idMetadata != null) {
-                this.idMetadata = new IdMetadata(method, field, fieldName);
-            }
-
-            Version version = member.getAnnotation(Version.class);
-            if(version != null && this.versionMetadata != null) {
-                this.versionMetadata = new VersionMetadata(method, field, fieldName);
-            }
-
-            if(field != null) {
-                FieldMetadata fieldMetadata = new FieldMetadata(method, field, fieldName);
-                if(!this.fieldMetadataSet.contains(fieldMetadata))
-                    this.fieldMetadataSet.add(fieldMetadata);
-                return true;
-            }else if(documentId != null || version != null) {
-                return true;
-            }
-
             MultiFields multiFields = member.getAnnotation(MultiFields.class);
-            if(multiFields != null) {
+            if(field != null || multiFields != null) {
+                String fieldName = DocumentUtils.getFieldName(method);
+
+                DocumentId documentId = member.getAnnotation(DocumentId.class);
+                if(documentId != null && this.idMetadata != null) {
+                    this.idMetadata = new IdMetadata(method, field, fieldName);
+                }
+
+                Version version = member.getAnnotation(Version.class);
+                if(version != null && this.versionMetadata != null) {
+                    this.versionMetadata = new VersionMetadata(method, field, fieldName);
+                }
+
+                if(field != null) {
+                    FieldMetadata fieldMetadata = new FieldMetadata(method, field, fieldName);
+                    if(!this.fieldMetadataSet.contains(fieldMetadata)) {
+                        this.fieldMetadataSet.add(fieldMetadata);
+                    }
+                    return true;
+                }
+
+                if(documentId != null || version != null) {
+                    return true;
+                }
+
+
                 MultiFieldsMetadata multiFieldsMetadata =
                         new MultiFieldsMetadata(method, multiFields, fieldName);
                 if(!this.multiFieldsMetadataSet.contains(multiFieldsMetadata))
@@ -199,11 +229,5 @@ public final class Metadata {
 
             return false;
         }
-
-        @Override
-        public Metadata get() {
-            return build();
-        }
     }
-
 }

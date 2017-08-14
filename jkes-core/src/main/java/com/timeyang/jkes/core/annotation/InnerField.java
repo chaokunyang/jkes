@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
  * @author chaokunyang
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
+@Target({ElementType.METHOD, ElementType.FIELD})
 public @interface InnerField {
 
     /**

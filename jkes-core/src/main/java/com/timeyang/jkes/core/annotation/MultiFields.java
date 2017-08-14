@@ -34,7 +34,7 @@ curl -XPUT 'localhost:9200/my_index?pretty' -H 'Content-Type: application/json' 
  * @author chaokunyang
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
+@Target({ElementType.METHOD, ElementType.FIELD})
 public @interface MultiFields {
 
     Field mainField();

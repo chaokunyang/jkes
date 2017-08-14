@@ -34,7 +34,7 @@ public class Application {
     @Bean
     public CommandLineRunner commandLineRunner() {
         return args -> {
-            addData();
+            // addData();
             // deleteData();
         };
     }
@@ -54,7 +54,7 @@ public class Application {
     }
 
     private void addData() {
-        for(int i = 0; i < 20000; i++) {
+        for(int i = 0; i < 10000; i++) {
             personGroupRepository.save(generatePersonGroup(i));
         }
     }

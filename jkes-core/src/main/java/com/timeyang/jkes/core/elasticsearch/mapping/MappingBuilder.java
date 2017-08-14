@@ -5,8 +5,12 @@ import com.timeyang.jkes.core.annotation.FieldType;
 import com.timeyang.jkes.core.annotation.InnerField;
 import com.timeyang.jkes.core.annotation.MultiFields;
 import com.timeyang.jkes.core.annotation.NotThreadSafe;
+import com.timeyang.jkes.core.elasticsearch.exception.IllegalJkesStateException;
 import com.timeyang.jkes.core.exception.FieldTypeInferException;
-import com.timeyang.jkes.core.util.DocumentUtils;
+import com.timeyang.jkes.core.metadata.DocumentMetadata;
+import com.timeyang.jkes.core.metadata.FieldMetadata;
+import com.timeyang.jkes.core.metadata.Metadata;
+import com.timeyang.jkes.core.metadata.MultiFieldsMetadata;
 import com.timeyang.jkes.core.util.ReflectionUtils;
 import com.timeyang.jkes.core.util.StringUtils;
 import org.json.JSONObject;
@@ -79,40 +83,26 @@ public class MappingBuilder {
         context.addLast(clazz);
 
         JSONObject properties = new JSONObject();
-        Method[] methods = clazz.getMethods(); // include superclass methods
-        for(Method method : methods) {
-            Field fieldAnnotation = method.getAnnotation(Field.class);
 
-            if(fieldAnnotation == null) {
-                String methodName = method.getName();
-                if(methodName.startsWith("get") || methodName.startsWith("is")) {
-                    String memberFieldName = ReflectionUtils.getFieldNameForGetter(methodName);
-                    fieldAnnotation = ReflectionUtils.getFieldAnnotation(clazz, memberFieldName, Field.class);
-                }
-            }
+        Metadata metadata = Metadata.getMetadata();
+        if(Metadata.getMetadata() == null)
+            throw new IllegalJkesStateException("Metadata doesn't be inited correctly, the init method doesn't get invoked");
+        DocumentMetadata documentMetadata = metadata.getMetadataMap().get(clazz);
+        Set<FieldMetadata> fieldMetadataSet = documentMetadata.getFieldMetadataSet();
+        Set<MultiFieldsMetadata> multiFieldsMetadataSet = documentMetadata.getMultiFieldsMetadataSet();
 
-            if(fieldAnnotation != null && !willRecursive(method)) {
+        for(FieldMetadata fieldMetadata : fieldMetadataSet) {
+            Method method = fieldMetadata.getMethod();
+            if(!willRecursive(method))
+                properties.put(fieldMetadata.getFieldName(),
+                    getSingleFieldMapping(method, fieldMetadata.getField()));
+        }
 
-                // all single field mapping is added here, getSingleFieldMapping method just generate the value
-                properties.put(DocumentUtils.getFieldName(method),
-                        getSingleFieldMapping(method, fieldAnnotation));
-            }else {
-                MultiFields multiFields = method.getAnnotation(MultiFields.class);
-                if(multiFields == null) {
-                    String methodName = method.getName();
-                    if(methodName.startsWith("get") || methodName.startsWith("is")) {
-                        String memberFieldName = ReflectionUtils.getFieldNameForGetter(methodName);
-                        multiFields = ReflectionUtils.getFieldAnnotation(clazz, memberFieldName, MultiFields.class);
-                    }
-                }
-                if(multiFields != null && !willRecursive(method)) {
-
-                    // all multi fields mapping is added here, getMultiFieldsMapping method just generate the value
-                    properties.put(DocumentUtils.getFieldName(method),
-                            getMultiFieldsMapping(method, multiFields));
-                }
-            }
-
+        for (MultiFieldsMetadata multiFieldsMetadata : multiFieldsMetadataSet) {
+            Method method = multiFieldsMetadata.getMethod();
+            if(!willRecursive(method))
+                properties.put(multiFieldsMetadata.getFieldName(),
+                    getMultiFieldsMapping(multiFieldsMetadata.getMethod(), multiFieldsMetadata.getMultiFields()));
         }
 
         context.removeLast();

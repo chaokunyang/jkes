@@ -8,7 +8,7 @@ import java.lang.annotation.*;
  * @author chaokunyang
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.ANNOTATION_TYPE, ElementType.METHOD }) // 后期基于ElementType.ANNOTATION_TYPE编写元注解
+@Target({ ElementType.METHOD, ElementType.FIELD }) // in future, code meta annotation base on ElementType.ANNOTATION_TYPE
 @Documented
 @Inherited
 public @interface Field {

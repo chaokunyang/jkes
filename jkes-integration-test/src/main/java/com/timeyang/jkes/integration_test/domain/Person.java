@@ -29,21 +29,12 @@ import javax.persistence.ManyToOne;
 @Entity
 @Document
 public class Person extends AuditedEntity {
+
+    // @Id will be identified automatically
+    // @Field(type = FieldType.Long)
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String name;
-    private String gender;
-    private Integer age;
-    private String description;
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "group_id")
-    private PersonGroup personGroup;
-
-    @Field(type = FieldType.Long)
-    public Long getId() {
-        return id;
-    }
 
     @MultiFields(
             mainField = @Field(type = FieldType.Text),
@@ -52,29 +43,43 @@ public class Person extends AuditedEntity {
                     @InnerField(suffix = "english", type = FieldType.Text, analyzer = "english")
             }
     )
+    private String name;
+
+    @Field(type = FieldType.Keyword)
+    private String gender;
+
+    @Field(type = FieldType.Integer)
+    private Integer age;
+
+    // don't add @Field to test whether ignored
+    // @Field(type = FieldType.Text)
+    private String description;
+
+    @Field(type = FieldType.Object)
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "group_id")
+    private PersonGroup personGroup;
+
+    public Long getId() {
+        return id;
+    }
+
     public String getName() {
         return name;
     }
 
-    @Field(type = FieldType.Keyword)
     public String getGender() {
         return gender;
     }
 
-    @Field(type = FieldType.Integer)
     public Integer getAge() {
         return age;
     }
 
-    /**
-     * don't add @Field to test whether ignored
-     */
-    // @Field(type = FieldType.Text)
     public String getDescription() {
         return description;
     }
 
-    @Field(type = FieldType.Object)
     public PersonGroup getPersonGroup() {
         return personGroup;
     }

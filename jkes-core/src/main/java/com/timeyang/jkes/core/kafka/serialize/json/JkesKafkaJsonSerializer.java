@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.timeyang.jkes.core.annotation.Document;
-import com.timeyang.jkes.core.elasticsearch.serialize.JkesJsonSerializer;
+import com.timeyang.jkes.core.elasticsearch.serialize.MetaableJkesJsonSerializer;
 import com.timeyang.jkes.core.util.ClassUtils;
 import org.apache.kafka.common.errors.SerializationException;
 import org.apache.kafka.common.serialization.Serializer;
@@ -26,7 +26,7 @@ public class JkesKafkaJsonSerializer implements Serializer {
 
         SimpleModule module = new SimpleModule();
         Set<Class<?>> annotatedClasses = ClassUtils.getAnnotatedClasses(documentBasePackage, Document.class);
-        annotatedClasses.forEach(aClass -> module.addSerializer(aClass, new JkesJsonSerializer<>()));
+        annotatedClasses.forEach(aClass -> module.addSerializer(aClass, new MetaableJkesJsonSerializer<>()));
 
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(module);

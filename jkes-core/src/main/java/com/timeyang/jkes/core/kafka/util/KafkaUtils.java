@@ -5,7 +5,7 @@ import com.timeyang.jkes.core.util.Asserts;
 import com.timeyang.jkes.core.support.Config;
 import com.timeyang.jkes.core.util.DocumentUtils;
 import com.timeyang.jkes.core.annotation.DocumentId;
-import com.timeyang.jkes.core.elasticsearch.exception.IlllegalSearchStateException;
+import com.timeyang.jkes.core.elasticsearch.exception.IllegalJkesStateException;
 import com.timeyang.jkes.core.util.StringUtils;
 
 import javax.persistence.Id;
@@ -72,7 +72,7 @@ public class KafkaUtils {
                     Object key = method.invoke(entity);
                     return String.valueOf(key);
                 } catch (IllegalAccessException e) {
-                    throw new IlllegalSearchStateException(
+                    throw new IllegalJkesStateException(
                             DocumentId.class + " or " + Id.class + "can only be annotated on public class", e);
                 } catch (InvocationTargetException e) {
                     throw new RuntimeException(e);
@@ -98,7 +98,7 @@ public class KafkaUtils {
             clazz = clazz.getSuperclass();
         }while (clazz != null);
 
-        throw new IlllegalSearchStateException(domainClass + " doesn't have a document id. You either annotated a method with " + DocumentId.class + " , or annotated a field or getter method with " + Id.class);
+        throw new IllegalJkesStateException(domainClass + " doesn't have a document id. You either annotated a method with " + DocumentId.class + " , or annotated a field or getter method with " + Id.class);
     }
 
     public static String getDeleteTopic() {

@@ -110,12 +110,17 @@ public class ReflectionUtils {
     }
 
     public static String getFieldNameForGetter(String methodName) {
+        Asserts.notBlank(methodName, "methodName must have content");
         Asserts.check(methodName.startsWith("get") || methodName.startsWith("is"),
                 "the method is not a getter method");
         if(methodName.startsWith("get")) {
-            return methodName.substring(3);
+            char c[] = methodName.toCharArray();
+            c[3] = Character.toLowerCase(c[3]);
+            return String.valueOf(Arrays.copyOfRange(c, 3, c.length));
         }else {
-            return methodName.substring(2);
+            char c[] = methodName.toCharArray();
+            c[2] = Character.toLowerCase(c[2]);
+            return String.valueOf(Arrays.copyOfRange(c, 2, c.length));
         }
     }
 
