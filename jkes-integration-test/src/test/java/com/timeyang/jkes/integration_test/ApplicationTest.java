@@ -117,7 +117,7 @@ public class ApplicationTest {
     public void queryAndSend() {
         // concurrentIndexer.addTask(new IndexTask<PersonGroup>() {
         //     @Override
-        //     public Class<PersonGroup> getEntityClass() {
+        //     public Class<PersonGroup> getDomainClass() {
         //         return PersonGroup.class;
         //     }
         //

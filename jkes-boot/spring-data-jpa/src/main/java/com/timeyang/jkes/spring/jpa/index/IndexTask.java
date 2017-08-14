@@ -12,7 +12,7 @@ import org.springframework.data.domain.Pageable;
 
 public interface IndexTask<T> {
 
-    Class<T> getEntityClass();
+    Class<T> getDomainClass();
 
     long count();
 

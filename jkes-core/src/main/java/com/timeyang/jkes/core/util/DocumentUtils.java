@@ -74,7 +74,7 @@ public class DocumentUtils {
             return StringUtils.addUnderscores(method.getName().substring(3));
         }else {
             throw new IllegalAnnotatedFieldException(Field.class.getCanonicalName() +
-                    "can only be annotated on getter method or isXXX method, " + "can't be annotated on method on ");
+                    " can only be annotated on getter method or isXXX method, " + "can't be annotated on method on ");
         }
 
     }
