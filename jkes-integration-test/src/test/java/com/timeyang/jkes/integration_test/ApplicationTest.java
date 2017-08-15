@@ -70,7 +70,7 @@ public class ApplicationTest {
         long elapsed = System.currentTimeMillis() - start;
         System.out.println("elapsed time = " + elapsed + "ms");
         System.out.println((elapsed * 1000.0) / (times_per_thread * nThreads) + " microseconds per execution");
-        System.out.println("addData ==> qps = " + times_per_thread * nThreads / (elapsed / 1000));
+        System.out.println("addData ==> tps = " + times_per_thread * nThreads / (elapsed / 1000));
     }
 
     // @Test
@@ -110,7 +110,7 @@ public class ApplicationTest {
         long elapsed = System.currentTimeMillis() - start;
         System.out.println("elapsed time = " + elapsed + "ms");
         System.out.println((elapsed * 1000.0) / (count) + " microseconds per record");
-        System.out.println("queryAndSendData ==> qps = " + count / (elapsed / 1000));
+        System.out.println("queryAndSendData ==> tps = " + count / (elapsed / 1000));
     }
 
     public void queryAndSend() {
@@ -132,7 +132,7 @@ public class ApplicationTest {
 
         int nThreads = 4;
         ExecutorService exec = Executors.newFixedThreadPool(nThreads);
-        int sizePerThread = 4_0000;
+        int sizePerThread = 6_0000;
 
         for(int i = 0; i < nThreads; i++) {
             int thread_number = i;
@@ -157,7 +157,7 @@ public class ApplicationTest {
         long elapsed = System.currentTimeMillis() - start;
         System.out.println("elapsed time = " + elapsed + "ms");
         System.out.println((elapsed * 1000.0) / (sizePerThread * nThreads) + " microseconds per record");
-        System.out.println("sendData ==> qps = " + (sizePerThread * nThreads) / (elapsed / 1000));
+        System.out.println("sendData ==> tps = " + (sizePerThread * nThreads) / (elapsed / 1000));
     }
 
     public void deleteData() {

@@ -7,6 +7,8 @@ import com.timeyang.jkes.core.annotation.Immutable;
 import com.timeyang.jkes.core.annotation.MappedSuperclass;
 import com.timeyang.jkes.core.annotation.MultiFields;
 import com.timeyang.jkes.core.annotation.Version;
+import com.timeyang.jkes.core.elasticsearch.exception.IllegalJkesStateException;
+import com.timeyang.jkes.core.kafka.util.KafkaUtils;
 import com.timeyang.jkes.core.support.JkesProperties;
 import com.timeyang.jkes.core.util.ClassUtils;
 import com.timeyang.jkes.core.util.DocumentUtils;
@@ -16,6 +18,7 @@ import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
+import javax.persistence.Id;
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -72,7 +75,16 @@ public final class Metadata {
         return documentMetadataMap;
     }
 
+    /**
+     * If metadata is null, this method will throw IllegalJkesStateException.
+     * <p>So there is no need to check whether metadata is null in the caller</p>
+     *
+     * @return Metadata
+     * @throws IllegalJkesStateException throw IllegalJkesStateException when metadata is null
+     */
     public static Metadata getMetadata() {
+        if(metadata == null)
+            throw new IllegalJkesStateException("Metadata doesn't be inited correctly, the init method doesn't get invoked");
         return metadata;
     }
 
@@ -141,12 +153,14 @@ public final class Metadata {
                     break;
             } while (c != Object.class);
 
+            String topic = KafkaUtils.getTopic(clazz);
 
             return DocumentMetadata.builder()
                     .idMetadata(this.idMetadata)
                     .versionMetadata(this.versionMetadata)
                     .fieldMetadataSet(this.fieldMetadataSet)
                     .multiFieldsMetadataSet(this.multiFieldsMetadataSet)
+                    .topic(topic)
                     .build();
         }
 
@@ -191,43 +205,43 @@ public final class Metadata {
          * @return whether member is annotated
          */
         private boolean handleMember(AccessibleObject member, Method method) {
+            boolean annotated = false;
+
             Field field = member.getAnnotation(Field.class);
-            MultiFields multiFields = member.getAnnotation(MultiFields.class);
-            if(field != null || multiFields != null) {
+            if(field != null) {
+                annotated = true;
                 String fieldName = DocumentUtils.getFieldName(method);
-
-                DocumentId documentId = member.getAnnotation(DocumentId.class);
-                if(documentId != null && this.idMetadata != null) {
-                    this.idMetadata = new IdMetadata(method, field, fieldName);
+                FieldMetadata fieldMetadata = new FieldMetadata(method, field, fieldName);
+                if(!this.fieldMetadataSet.contains(fieldMetadata)) {
+                    this.fieldMetadataSet.add(fieldMetadata);
                 }
+            }
 
-                Version version = member.getAnnotation(Version.class);
-                if(version != null && this.versionMetadata != null) {
-                    this.versionMetadata = new VersionMetadata(method, field, fieldName);
-                }
-
-                if(field != null) {
-                    FieldMetadata fieldMetadata = new FieldMetadata(method, field, fieldName);
-                    if(!this.fieldMetadataSet.contains(fieldMetadata)) {
-                        this.fieldMetadataSet.add(fieldMetadata);
-                    }
-                    return true;
-                }
-
-                if(documentId != null || version != null) {
-                    return true;
-                }
-
-
+            MultiFields multiFields = member.getAnnotation(MultiFields.class);
+            if(multiFields != null) {
+                annotated = true;
+                String fieldName = DocumentUtils.getFieldName(method);
                 MultiFieldsMetadata multiFieldsMetadata =
                         new MultiFieldsMetadata(method, multiFields, fieldName);
                 if(!this.multiFieldsMetadataSet.contains(multiFieldsMetadata))
                     this.multiFieldsMetadataSet.add(multiFieldsMetadata);
-
-                return true;
             }
 
-            return false;
+            if(member.isAnnotationPresent(DocumentId.class) || member.isAnnotationPresent(Id.class)) {
+                annotated = true;
+                if(this.idMetadata == null)
+                    this.idMetadata = new IdMetadata(method, field, DocumentUtils.getFieldName(method));
+            }
+
+            if(member.isAnnotationPresent(Version.class)
+                    || member.isAnnotationPresent(javax.persistence.Version.class)) {
+                annotated = true;
+                if(this.versionMetadata == null)
+                    this.versionMetadata =
+                            new VersionMetadata(method, field, DocumentUtils.getFieldName(method));
+            }
+
+            return annotated;
         }
     }
 }

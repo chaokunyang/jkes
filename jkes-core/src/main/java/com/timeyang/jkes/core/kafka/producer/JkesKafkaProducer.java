@@ -1,13 +1,21 @@
 package com.timeyang.jkes.core.kafka.producer;
 
+import com.timeyang.jkes.core.exception.JkesException;
 import com.timeyang.jkes.core.kafka.serialize.json.JkesKafkaJsonSerializer;
-import com.timeyang.jkes.core.kafka.util.KafkaUtils;
+import com.timeyang.jkes.core.metadata.DocumentMetadata;
+import com.timeyang.jkes.core.metadata.Metadata;
 import com.timeyang.jkes.core.support.JkesProperties;
-import org.apache.kafka.clients.producer.*;
+import org.apache.kafka.clients.producer.Callback;
+import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.clients.producer.RecordMetadata;
 
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.LinkedList;
 import java.util.Properties;
 import java.util.concurrent.Future;
@@ -43,15 +51,39 @@ public final class JkesKafkaProducer {
     }
 
     public void send(Object value) {
-        String topic = KafkaUtils.getTopic(value);
-        String key = KafkaUtils.getKey(value);
-        send(topic, key, value);
+        // String topic = KafkaUtils.getTopic(value);
+        // String key = KafkaUtils.getKey(value);
+        DocumentMetadata documentMetadata =
+                Metadata.getMetadata().getMetadataMap().get(value.getClass());
+
+        String topic = documentMetadata.getTopic();
+
+        Method method = documentMetadata.getIdMetadata().getMethod();
+        try {
+            String key = String.valueOf(method.invoke(value));
+            send(topic, key, value);
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            throw new JkesException(
+                    String.format("Can't invoke method[%s] on object[%s] of class[%s]", method, value, value.getClass()),
+                    e);
+        }
     }
 
     public Future<RecordMetadata> send(Object value, Callback callback) {
-        String topic = KafkaUtils.getTopic(value);
-        String key = KafkaUtils.getKey(value);
-        return producer.send(new ProducerRecord<>(topic, key, value), callback);
+        DocumentMetadata documentMetadata =
+                Metadata.getMetadata().getMetadataMap().get(value.getClass());
+
+        String topic = documentMetadata.getTopic();
+
+        Method method = documentMetadata.getIdMetadata().getMethod();
+        try {
+            String key = String.valueOf(method.invoke(value));
+            return producer.send(new ProducerRecord<>(topic, key, value), callback);
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            throw new JkesException(
+                    String.format("Can't invoke method[%s] on object[%s] of class[%s]", method, value, value.getClass()),
+                    e);
+        }
     }
 
     public void send(Iterable<?> iterable) {

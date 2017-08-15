@@ -5,7 +5,6 @@ import com.timeyang.jkes.core.annotation.FieldType;
 import com.timeyang.jkes.core.annotation.InnerField;
 import com.timeyang.jkes.core.annotation.MultiFields;
 import com.timeyang.jkes.core.annotation.NotThreadSafe;
-import com.timeyang.jkes.core.elasticsearch.exception.IllegalJkesStateException;
 import com.timeyang.jkes.core.exception.FieldTypeInferException;
 import com.timeyang.jkes.core.metadata.DocumentMetadata;
 import com.timeyang.jkes.core.metadata.FieldMetadata;
@@ -84,10 +83,7 @@ public class MappingBuilder {
 
         JSONObject properties = new JSONObject();
 
-        Metadata metadata = Metadata.getMetadata();
-        if(Metadata.getMetadata() == null)
-            throw new IllegalJkesStateException("Metadata doesn't be inited correctly, the init method doesn't get invoked");
-        DocumentMetadata documentMetadata = metadata.getMetadataMap().get(clazz);
+        DocumentMetadata documentMetadata = Metadata.getMetadata().getMetadataMap().get(clazz);
         Set<FieldMetadata> fieldMetadataSet = documentMetadata.getFieldMetadataSet();
         Set<MultiFieldsMetadata> multiFieldsMetadataSet = documentMetadata.getMultiFieldsMetadataSet();
 

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.JsonStreamContext;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.timeyang.jkes.core.elasticsearch.exception.IllegalAnnotatedFieldException;
+import com.timeyang.jkes.core.exception.JkesException;
 import com.timeyang.jkes.core.util.StringUtils;
 import com.timeyang.jkes.core.annotation.Field;
 import com.timeyang.jkes.core.annotation.MultiFields;
@@ -90,7 +91,7 @@ public class JkesJsonSerializer<T> extends StdSerializer<T> {
             try {
                 v = method.invoke(value);
             } catch (InvocationTargetException e) {
-                throw new RuntimeException(e);
+                throw new JkesException(e);
             }
 
             // serialize data

@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonStreamContext;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
-import com.timeyang.jkes.core.elasticsearch.exception.IllegalJkesStateException;
 import com.timeyang.jkes.core.exception.IllegalMemberAccessException;
 import com.timeyang.jkes.core.exception.ReflectiveInvocationTargetException;
 import com.timeyang.jkes.core.metadata.DocumentMetadata;
@@ -47,8 +46,6 @@ public class MetaableJkesJsonSerializer<T> extends StdSerializer<T> {
         gen.writeStartObject(); // writeStartObject(value) will call setCurrentValue(value) well
         Class<?> entityClass = value.getClass();
 
-        if(Metadata.getMetadata() == null)
-            throw new IllegalJkesStateException("Metadata doesn't be inited correctly, the init method doesn't get invoked");
         DocumentMetadata documentMetadata = Metadata.getMetadata().getMetadataMap().get(entityClass);
         Set<FieldMetadata> fieldMetadataSet = documentMetadata.getFieldMetadataSet();
         Set<MultiFieldsMetadata> multiFieldsMetadataSet = documentMetadata.getMultiFieldsMetadataSet();
