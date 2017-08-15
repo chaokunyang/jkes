@@ -1,10 +1,12 @@
 package com.timeyang.jkes.core.util;
 
 import com.timeyang.jkes.core.annotation.Document;
-import com.timeyang.jkes.core.annotation.Version;
 import com.timeyang.jkes.core.annotation.Field;
 import com.timeyang.jkes.core.annotation.MultiFields;
 import com.timeyang.jkes.core.elasticsearch.exception.IllegalAnnotatedFieldException;
+import com.timeyang.jkes.core.metadata.DocumentMetadata;
+import com.timeyang.jkes.core.metadata.Metadata;
+import com.timeyang.jkes.core.metadata.VersionMetadata;
 import com.timeyang.jkes.core.support.Config;
 
 import java.lang.reflect.Method;
@@ -80,12 +82,10 @@ public class DocumentUtils {
     }
 
     public static String getVersionField(Class<?> clazz) {
-        Method[] methods = clazz.getMethods();
-        for(Method method : methods) {
-            if(method.isAnnotationPresent(Field.class) && method.isAnnotationPresent(Version.class)) {
-                return getFieldName(method);
-            }
-        }
+        DocumentMetadata documentMetadata = Metadata.getMetadata().getMetadataMap().get(clazz);
+        VersionMetadata versionMetadata = documentMetadata.getVersionMetadata();
+        if(versionMetadata != null)
+            return getFieldName(versionMetadata.getMethod());
 
         return null;
     }
