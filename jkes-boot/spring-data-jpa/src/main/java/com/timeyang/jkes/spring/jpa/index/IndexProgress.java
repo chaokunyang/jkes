@@ -19,6 +19,6 @@ public class IndexProgress {
         this.clazz = clazz;
         this.total = total;
         this.indexed = indexed;
-        this.percent = Math.ceil(indexed * 10000 / total) / 100;
+        this.percent = total != 0 ? Math.ceil(indexed * 10000 / total) / 100 : 100;
     }
 }
