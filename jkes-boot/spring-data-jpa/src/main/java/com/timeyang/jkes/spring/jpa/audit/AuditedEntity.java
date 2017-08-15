@@ -1,7 +1,10 @@
 package com.timeyang.jkes.spring.jpa.audit;
 
-import com.timeyang.jkes.core.annotation.Version;
 import com.timeyang.jkes.core.annotation.Field;
+import lombok.Data;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.Column;
 import javax.persistence.EntityListeners;
@@ -15,45 +18,22 @@ import java.util.Date;
  */
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
+@Data
 public abstract class AuditedEntity {
 
     @CreatedDate // Created Date
     @Column(nullable = false)
+    @Field
     private Date dateCreated;
 
     @LastModifiedDate // Last Modified Date
     @Column(nullable = false)
+    @Field
     private Date dateModified;
 
     @javax.persistence.Version
     @Column(name = "revision")
+    @Field
     private long version;
 
-    @Field
-    public Date getDateCreated() {
-        return dateCreated;
-    }
-
-    public void setDateCreated(Date dateCreated) {
-        this.dateCreated = dateCreated;
-    }
-
-    @Field
-    public Date getDateModified() {
-        return dateModified;
-    }
-
-    public void setDateModified(Date dateModified) {
-        this.dateModified = dateModified;
-    }
-
-    @Field
-    @Version
-    public long getVersion() {
-        return version;
-    }
-
-    public void setVersion(long version) {
-        this.version = version;
-    }
 }

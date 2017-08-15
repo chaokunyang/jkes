@@ -9,6 +9,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ComponentScans;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
 
@@ -22,7 +23,7 @@ import javax.persistence.EntityManagerFactory;
     @ComponentScan(basePackageClasses = Application.class)
 })
 @EnableAspectJAutoProxy
-// @Import(JkesSpringConfig.class)
+@EnableJpaAuditing
 @EnableJkes
 public class SearchConfig {
 

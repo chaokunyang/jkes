@@ -69,7 +69,7 @@ public final class Metadata {
     }
 
     /**
-     * Get documents metadata of all class annotated with {@link Document}
+     * Get documents metadata of all classes annotated with {@link Document}
      * @return documents metadata
      */
     public Map<Class<?>, DocumentMetadata> getMetadataMap() {
