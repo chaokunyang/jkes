@@ -8,6 +8,7 @@ import com.timeyang.jkes.core.annotation.MappedSuperclass;
 import com.timeyang.jkes.core.annotation.MultiFields;
 import com.timeyang.jkes.core.annotation.Version;
 import com.timeyang.jkes.core.elasticsearch.exception.IllegalJkesStateException;
+import com.timeyang.jkes.core.exception.MissingDocumentIdAnnotationException;
 import com.timeyang.jkes.core.kafka.util.KafkaUtils;
 import com.timeyang.jkes.core.support.JkesProperties;
 import com.timeyang.jkes.core.util.ClassUtils;
@@ -152,6 +153,11 @@ public final class Metadata {
                         !c.isAnnotationPresent(javax.persistence.MappedSuperclass.class))
                     break;
             } while (c != Object.class);
+
+            if(this.idMetadata == null)
+                throw new MissingDocumentIdAnnotationException(
+                        "Document id is not present, " +
+                                DocumentId.class + " or " + Id.class + " must be present!");
 
             String topic = KafkaUtils.getTopic(clazz);
 

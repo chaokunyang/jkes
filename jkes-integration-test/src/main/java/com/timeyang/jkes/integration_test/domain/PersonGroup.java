@@ -62,7 +62,7 @@ public class PersonGroup extends AuditedEntity {
     }
 
     /**
-     * 不加Field注解，测试序列化时是否忽略
+     * don't add @Field to test whether ignored
      */
     public String getDescription() {
         return description;
