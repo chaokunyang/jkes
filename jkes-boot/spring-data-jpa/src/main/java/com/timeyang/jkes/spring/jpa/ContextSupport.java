@@ -15,7 +15,7 @@ public class ContextSupport implements ApplicationContextAware {
 
     private final Object lock = new Object();
 
-    private ApplicationContext applicationContext;
+    private volatile ApplicationContext applicationContext;
 
     @Override
     public  void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
