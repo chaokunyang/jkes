@@ -13,17 +13,23 @@ import javax.inject.Named;
 @Named
 public class ContextSupport implements ApplicationContextAware {
 
+    private final Object lock = new Object();
+
     private ApplicationContext applicationContext;
 
     @Override
-    public synchronized void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        this.applicationContext = applicationContext;
-        notifyAll();
+    public  void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        synchronized (lock) {
+            this.applicationContext = applicationContext;
+            lock.notifyAll();
+        }
     }
 
-    public synchronized  Object getBean(String beanName) throws InterruptedException {
-        while(this.applicationContext == null)
-            wait();
+    public Object getBean(String beanName) throws InterruptedException {
+        synchronized (lock) {
+            while(this.applicationContext == null)
+                lock.wait();
+        }
         try {
             return this.applicationContext.getBean(beanName);
         }catch (NoSuchBeanDefinitionException e) {
@@ -31,9 +37,11 @@ public class ContextSupport implements ApplicationContextAware {
         }
     }
 
-    public synchronized Object getBean(Class<?> requiredType) throws InterruptedException {
-        if(this.applicationContext == null)
-            wait();
+    public Object getBean(Class<?> requiredType) throws InterruptedException {
+        synchronized (lock) {
+            while(this.applicationContext == null)
+                lock.wait();
+        }
         try {
             return this.applicationContext.getBean(requiredType);
         }catch (NoSuchBeanDefinitionException e) {
