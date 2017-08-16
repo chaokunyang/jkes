@@ -48,13 +48,13 @@ public class ApplicationTest {
     public void test() {
         // addData();
         // queryAndSendData();
-        queryAndSend();
-        // sendData();
+        // queryAndSend();
+        sendData();
     }
 
     // @Test
     public void addData() {
-        long start = System.currentTimeMillis();
+        long start = System.nanoTime();
 
         int nThreads = 10;
         int times_per_thread = 2_000;
@@ -73,15 +73,15 @@ public class ApplicationTest {
             System.err.println("thread interrupted");
         }
 
-        long elapsed = System.currentTimeMillis() - start;
-        System.out.println("elapsed time = " + elapsed + "ms");
-        System.out.println((elapsed * 1000.0) / (times_per_thread * nThreads) + " microseconds per execution");
-        System.out.println("addData ==> tps = " + times_per_thread * nThreads / (elapsed / 1000));
+        long elapsed = System.nanoTime() - start;
+        System.out.println("elapsed time = " + elapsed / 1000_000 + "ms");
+        System.out.println((elapsed / 1000) / (times_per_thread * nThreads) + " microseconds per record");
+        System.out.println("queryAndSendData ==> tps = " + (times_per_thread * nThreads) / (elapsed / 1000_000_000));
     }
 
     // @Test
     public void queryAndSendData() {
-        long start = System.currentTimeMillis();
+        long start = System.nanoTime();
 
         int nThreads = 10;
         ExecutorService exec = Executors.newFixedThreadPool(nThreads);
@@ -113,14 +113,14 @@ public class ApplicationTest {
             System.err.println("thread interrupted");
         }
 
-        long elapsed = System.currentTimeMillis() - start;
-        System.out.println("elapsed time = " + elapsed + "ms");
-        System.out.println((elapsed * 1000.0) / (count) + " microseconds per record");
-        System.out.println("queryAndSendData ==> tps = " + count / (elapsed / 1000));
+        long elapsed = System.nanoTime() - start;
+        System.out.println("elapsed time = " + elapsed / 1000_000 + "ms");
+        System.out.println((elapsed / 1000) / count + " microseconds per record");
+        System.out.println("queryAndSendData ==> tps = " + count / (elapsed / 1000_000_000));
     }
 
     public void queryAndSend() {
-        long start = System.currentTimeMillis();
+        long start = System.nanoTime();
 
         indexer.startAll();
         try {
@@ -129,20 +129,21 @@ public class ApplicationTest {
             throw new RuntimeException(e);
         }
 
-        long elapsed = System.currentTimeMillis() - start;
+        long elapsed = System.nanoTime() - start;
 
         Long indexed = 0L;
         Collection<IndexProgress> progresses = indexer.getProgress().values();
         for(IndexProgress progress : progresses) {
             indexed += progress.getIndexed();
         }
-        System.out.println("elapsed time = " + elapsed + "ms");
-        System.out.println((elapsed * 1000.0) / indexed + " microseconds per record");
-        System.out.println("queryAndSend ==> tps = " + indexed / (elapsed / 1000));
+
+        System.out.println("elapsed time = " + elapsed / 1000_000 + "ms");
+        System.out.println((elapsed / 1000) / indexed + " microseconds per record");
+        System.out.println("queryAndSend ==> tps = " + indexed / (elapsed / 1000_000_000));
     }
 
     public void sendData() {
-        long start = System.currentTimeMillis();
+        long start = System.nanoTime();
 
         int nThreads = 4;
         ExecutorService exec = Executors.newFixedThreadPool(nThreads);
@@ -168,10 +169,10 @@ public class ApplicationTest {
             System.err.println("thread interrupted");
         }
 
-        long elapsed = System.currentTimeMillis() - start;
-        System.out.println("elapsed time = " + elapsed + "ms");
-        System.out.println((elapsed * 1000.0) / (sizePerThread * nThreads) + " microseconds per record");
-        System.out.println("sendData ==> tps = " + (sizePerThread * nThreads) / (elapsed / 1000));
+        long elapsed = System.nanoTime() - start;
+        System.out.println("elapsed time = " + elapsed / 1000_000 + "ms");
+        System.out.println((elapsed / 1000) / (sizePerThread * nThreads) + " microseconds per record");
+        System.out.println("sendData ==> tps = " + (sizePerThread * nThreads) / (elapsed / 1000_000_000));
     }
 
     public void deleteData() {

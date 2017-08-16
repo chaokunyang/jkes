@@ -26,6 +26,7 @@ import java.lang.reflect.Modifier;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -43,8 +44,8 @@ public final class Metadata {
     private final Map<Class<?>, DocumentMetadata> documentMetadataMap;
 
     private Metadata(Set<Class<?>> annotatedDocuments, Map<Class<?>, DocumentMetadata> documentMetadataMap) {
-        this.annotatedDocuments = Collections.unmodifiableSet(annotatedDocuments);
-        this.documentMetadataMap = Collections.unmodifiableMap(documentMetadataMap);
+        this.annotatedDocuments = Collections.unmodifiableSet(new LinkedHashSet<>(annotatedDocuments));
+        this.documentMetadataMap = Collections.unmodifiableMap(new HashMap<>(documentMetadataMap));
     }
 
     // TODO REMOVE
