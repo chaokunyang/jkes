@@ -22,7 +22,7 @@ public class ContextSupport implements ApplicationContextAware {
     }
 
     public synchronized  Object getBean(String beanName) throws InterruptedException {
-        if(this.applicationContext == null)
+        while(this.applicationContext == null)
             wait();
         try {
             return this.applicationContext.getBean(beanName);
