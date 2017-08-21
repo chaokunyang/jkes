@@ -487,7 +487,6 @@ integration_test_person_group/person_group/_search
 - `exception`包封装了常见异常
 - `intercept`包提供了AOP切点和切面
 - `index`包提供了`全量索引`功能。当前，我们提供了基于`线程池`的索引机制和基于`ForkJoin`的索引机制。在后续版本，我们会重构代码，增加基于`阻塞队列`的`生产者-消费者`模式，提供并发性能
-- 
 
 ### jkes-services
 `jkes-services`主要用来提供一些服务。
