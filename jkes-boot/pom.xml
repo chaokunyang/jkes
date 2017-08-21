@@ -13,7 +13,7 @@
     <artifactId>jkes-boot</artifactId>
     <packaging>pom</packaging>
     <modules>
-        <module>spring-data-jpa</module>
+        <module>jkes-spring-data-jpa</module>
     </modules>
 
     <dependencies>
