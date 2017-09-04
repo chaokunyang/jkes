@@ -1,26 +1,5 @@
-# Jkes 中文开发文档
-Jkes是一个基于Java、Kafka、ElasticSearch的搜索框架。Jkes提供了注解驱动的Hibernate风格的对象/文档映射，使用rest api用于文档查询。
-## Jkes工作原理
-索引工作原理：
-- 应用启动时，Jkes扫描所有标注`@Document`注解的实体，为它们构建元数据。
-- 基于构建的元数据，创建`index`和`mapping`Json格式的配置，然后通过`ElasticSearch Java Rest Client`将创建/更新`index`配置。
-- 为每个文档创建/更新`Kafka ElasticSearch Connector`，用于创建/更新文档
-- 为整个项目启动/更新`Jkes Deleter Connector`，用于删除文档
-- 拦截数据操作方法。将`* save(*)`方法返回的数据包装为`SaveEvent`保存到`EventContainer`；使用`(* delete*(..)`方法的参数，生成一个`DeleteEvent/DeleteAllEvent`保存到`EventContainer`。
-- 拦截事务。在事务提交后使用`JkesKafkaProducer`发送`SaveEvent`中的实体到Kafka，Kafka会使用我们提供的`JkesJsonSerializer`序列化指定的数据，然后发送到Kafka。
-- 与`SaveEvent`不同，`DeleteEvent`会直接被序列化，然后发送到Kafka，而不是只发送一份数据
-- 与`SaveEvent`和`DeleteEvent`不同，`DeleteAllEvent`不会发送数据到Kafka，而是直接通过`ElasticSearch Java Rest Client`删除相应的`index`，然后重建该索引，重启`Kafka ElasticSearch Connector`
-
-查询工作原理：
-- 查询服务通过rest api提供
-- 我们没有直接使用ElasticSearch进行查询，因为我们需要在后续版本使用机器学习进行搜索排序，而直接与ElasticSearch进行耦合，会增加搜索排序API的接入难度
-- 查询服务是一个Spring Boot Application，使用docker打包为镜像
-- 查询服务提供多版本API，用于API进化和兼容
-- 查询服务解析`json`请求，进行一些预处理后，使用`ElasticSearch Java Rest Client`转发到ElasticSearch，将得到的响应进行解析，进一步处理后返回到客户端。
-- 为了便于客户端人员开发，查询服务提供了一个[查询UI界面](http://localhost:9000/api/v1)，开发人员可以在这个页面得到预期结果后再把json请求体复制到程序中。
-
-## 流程图
-![Jkes流程图](https://raw.githubusercontent.com/chaokunyang/jkes/master/docs/images/Jkes%20Architecture.png)
+# Jkes
+Jkes是一个基于Java、Kafka、ElasticSearch的搜索框架。Jkes提供了注解驱动的JPA风格的对象/文档映射，使用rest api用于文档搜索。
 
 ## 安装
 可以参考[`jkes-integration-test`](https://github.com/chaokunyang/jkes/tree/master/jkes-integration-test)项目快速掌握jkes框架的使用方法。[`jkes-integration-test`](https://github.com/chaokunyang/jkes/tree/master/jkes-integration-test)是我们用来测试功能完整性的一个Spring Boot Application。
@@ -32,7 +11,7 @@ sudo bin/elasticsearch-plugin install analysis-smartcn
 ```
 
 ## 配置
-- 引入项目依赖
+- 引入jkes-spring-data-jpa依赖
 - 添加配置
 ```java
 @EnableAspectJAutoProxy
@@ -51,123 +30,42 @@ public class JkesConfig {
 ```java
 @Component
 @Configuration
-@PropertySource("classpath:jkes.properties")
 public class JkesConf extends DefaultJkesPropertiesImpl {
-
-    @Bean
-    public static PropertySourcesPlaceholderConfigurer
-    propertySourcesPlaceholderConfigurer() {
-        return new PropertySourcesPlaceholderConfigurer();
-    }
 
     @PostConstruct
     public void setUp() {
         Config.setJkesProperties(this);
     }
 
-
-    @Value("${kafka.bootstrap.servers}")
-    private String kafkaBootstrapServers;
-
-    @Value("${kafka.connect.servers}")
-    private String kafkaConnectServers;
-
-    @Value("${es.bootstrap.servers}")
-    private String esBootstrapServers;
-
-    @Value("${document.base_package}")
-    private String documentBasePackage;
-
-    @Value("${jkes.client.id}")
-    private String clientId;
-
     @Override
     public String getKafkaBootstrapServers() {
-        return replaceDomainNameWithIp(this.kafkaBootstrapServers);
+        return "k1-test.com:9292,k2-test.com:9292,k3-test.com:9292";
     }
 
     @Override
     public String getKafkaConnectServers() {
-        return kafkaConnectServers;
+        return "http://k1-test.com:8084,http://k2-test.com:8084,http://k3-test.com:8084";
     }
 
     @Override
     public String getEsBootstrapServers() {
-        return replaceDomainNameWithIp(this.esBootstrapServers);
+        return "http://es1-test.com:9200,http://es2-test.com:9200,http://es3-test.com:9200";
     }
 
     @Override
     public String getDocumentBasePackage() {
-        return documentBasePackage;
+        return "com.timeyang.jkes.integration_test.domain";
     }
 
     @Override
     public String getClientId() {
-        return clientId;
+        return "integration_test";
     }
 
-    public void setKafkaBootstrapServers(String kafkaBootstrapServers) {
-        this.kafkaBootstrapServers = kafkaBootstrapServers;
-    }
-
-    public void setKafkaConnectServers(String kafkaConnectServers) {
-        this.kafkaConnectServers = kafkaConnectServers;
-    }
-
-    public void setEsBootstrapServers(String esBootstrapServers) {
-        this.esBootstrapServers = esBootstrapServers;
-    }
-
-    public void setDocumentBasePackage(String documentBasePackage) {
-        this.documentBasePackage = documentBasePackage;
-    }
-
-    public void setClientId(String clientId) {
-        this.clientId = clientId;
-    }
-
-    // mainly used for test. in inner env, use ip directly or domainName if dns parse is available
-    private String replaceDomainNameWithIp(String u) {
-        StringBuilder stringBuilder = new StringBuilder();
-        String[] urls = u.split(",");
-        Arrays.stream(urls).forEach(urlStr -> {
-            if(urlStr.startsWith("http")) {
-                try {
-                    URL url = new URL(urlStr);
-                    InetAddress address = InetAddress.getByName(url.getHost());
-                    String ip = address.getHostAddress();
-                    stringBuilder
-                            .append(url.getProtocol()).append("://")
-                            .append(ip).append(":")
-                            .append(url.getPort())
-                            .append(",");
-                } catch (UnknownHostException | MalformedURLException e) {
-                    throw new RuntimeException(e);
-                }
-            }else {
-                String[] split = urlStr.split(":");
-                try {
-                    stringBuilder.append(HttpUtils.getIpsFromDomainName(split[0])).append(":").append(split[1]).append(",");
-                } catch (UnknownHostException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        });
-
-        return stringBuilder.deleteCharAt(stringBuilder.length() - 1).toString();
-    }
 }
 ```
-```properties
-kafka.bootstrap.servers=k1-test.com:9292,k2-test.com:9292,k3-test.com:9292
-kafka.connect.servers=http://k1-test.com:8084,http://k2-test.com:8084,http://k3-test.com:8084
+这里可以很灵活，如果使用Spring Boot，可以使用`@ConfigurationProperties`提供配置
 
-es.bootstrap.servers=http://es1-test.com:9200,http://es2-test.com:9200,http://es3-test.com:9200
-document.base_package=com.timeyang.jkes.integration_test.domain
-
-jkes.client.id=integration_test
-```
-这里可以很灵活，如果使用Spring Boot，可以直接使用`@ConfigurationProperties`
 - 增加索引管理端点
 因为我们不知道客户端使用的哪种web技术，所以索引端点需要在客户端添加。比如在`Spring MVC`中，可以按照如下方式添加索引端点
 ```java
@@ -211,8 +109,9 @@ public class SearchEndpoint {
 ```
 ## 快速开始
 ### 索引API
-- 实体注解
+使用`com.timeyang.jkes.core.annotation`包下相关注解标记实体
 ```java
+@lombok.Data
 @Entity
 @Document
 public class Person extends AuditedEntity {
@@ -247,32 +146,10 @@ public class Person extends AuditedEntity {
     @JoinColumn(name = "group_id")
     private PersonGroup personGroup;
 
-    public Long getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getGender() {
-        return gender;
-    }
-
-    public Integer getAge() {
-        return age;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public PersonGroup getPersonGroup() {
-        return personGroup;
-    }
 }
 ```
-```
+```java
+@lombok.Data
 @Entity
 @Document(type = "person_group", alias = "person_group_alias")
 public class PersonGroup extends AuditedEntity {
@@ -320,8 +197,10 @@ public class PersonGroup extends AuditedEntity {
     }
 }
 ```
-`setter`方法在这里被省略。
-### 查询API使用
+当更新实体时，文档会被自动索引到ElasticSearch；删除实体时，文档会自动从ElasticSearch删除。
+
+### 搜索API
+启动搜索服务[jkes-search-service](https://github.com/chaokunyang/jkes/tree/master/jkes-services/jkes-search-service)，搜索服务是一个Spring Boot Application，提供rest搜索api，默认运行在9000端口。
 - URI query
 ```
 curl -XPOST localhost:9000/api/v1/integration_test_person_group/person_group/_search?from=3&size=10
@@ -457,6 +336,28 @@ integration_test_person_group/person_group/_search
     }
 }
 ```
+
+## Jkes工作原理
+索引工作原理：
+- 应用启动时，Jkes扫描所有标注`@Document`注解的实体，为它们构建元数据。
+- 基于构建的元数据，创建`index`和`mapping`Json格式的配置，然后通过`ElasticSearch Java Rest Client`将创建/更新`index`配置。
+- 为每个文档创建/更新`Kafka ElasticSearch Connector`，用于创建/更新文档
+- 为整个项目启动/更新`Jkes Deleter Connector`，用于删除文档
+- 拦截数据操作方法。将`* save(*)`方法返回的数据包装为`SaveEvent`保存到`EventContainer`；使用`(* delete*(..)`方法的参数，生成一个`DeleteEvent/DeleteAllEvent`保存到`EventContainer`。
+- 拦截事务。在事务提交后使用`JkesKafkaProducer`发送`SaveEvent`中的实体到Kafka，Kafka会使用我们提供的`JkesJsonSerializer`序列化指定的数据，然后发送到Kafka。
+- 与`SaveEvent`不同，`DeleteEvent`会直接被序列化，然后发送到Kafka，而不是只发送一份数据
+- 与`SaveEvent`和`DeleteEvent`不同，`DeleteAllEvent`不会发送数据到Kafka，而是直接通过`ElasticSearch Java Rest Client`删除相应的`index`，然后重建该索引，重启`Kafka ElasticSearch Connector`
+
+查询工作原理：
+- 查询服务通过rest api提供
+- 我们没有直接使用ElasticSearch进行查询，因为我们需要在后续版本使用机器学习进行搜索排序，而直接与ElasticSearch进行耦合，会增加搜索排序API的接入难度
+- 查询服务是一个Spring Boot Application，使用docker打包为镜像
+- 查询服务提供多版本API，用于API进化和兼容
+- 查询服务解析`json`请求，进行一些预处理后，使用`ElasticSearch Java Rest Client`转发到ElasticSearch，将得到的响应进行解析，进一步处理后返回到客户端。
+- 为了便于客户端人员开发，查询服务提供了一个[查询UI界面](http://localhost:9000/api/v1)，开发人员可以在这个页面得到预期结果后再把json请求体复制到程序中。
+
+## 流程图
+![Jkes流程图](https://raw.githubusercontent.com/chaokunyang/jkes/master/docs/images/Jkes%20Architecture.png)
 
 ## 模块介绍
 ### jkes-core
