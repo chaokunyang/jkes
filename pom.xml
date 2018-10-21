@@ -15,8 +15,51 @@
         <module>jkes-integration-test</module>
     </modules>
 
+    <repositories>
+        <repository>
+            <id>aliyun</id>
+            <name>Repository for JDK 1.4 builds</name>
+            <url>http://maven.aliyun.com/nexus/content/groups/public</url>
+            <layout>default</layout>
+        </repository>
+        <repository>
+            <id>central</id>
+            <name>Central Repository</name>
+            <url>http://repo.maven.apache.org/maven2</url>
+            <layout>default</layout>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>nexus</id>
+            <name>local private nexus</name>
+            <url>http://mvnrepo.tae.taobao.com/content/groups/public/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </pluginRepository>
+        <pluginRepository>
+            <id>central</id>
+            <name>Central Repository</name>
+            <url>http://repo.maven.apache.org/maven2</url>
+            <layout>default</layout>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <releases>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+        </pluginRepository>
+    </pluginRepositories>
+
     <properties>
-        <jackson.version>2.8.0</jackson.version>
+        <jackson.version>2.8.11.1</jackson.version>
     </properties>
 
     <dependencies>
